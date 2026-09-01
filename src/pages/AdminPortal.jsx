@@ -17,20 +17,20 @@ import { ScoreModal } from '../components/Modals/ScoreModal';
 import { AddMatchModal } from '../components/Modals/AddMatchModal';
 import { KnockoutScoreModal } from '../components/Modals/KnockoutScoreModal';
 import { RosterModal } from '../components/Modals/RosterModal';
-import { 
-  ShieldCheck, 
-  Table2, 
-  Calendar, 
-  Users, 
-  Award, 
-  Cloud, 
-  ExternalLink, 
-  Plus, 
-  RefreshCw, 
-  CalendarPlus, 
-  Activity, 
-  UserPlus, 
-  Shuffle, 
+import {
+  ShieldCheck,
+  Table2,
+  Calendar,
+  Users,
+  Award,
+  Cloud,
+  ExternalLink,
+  Plus,
+  RefreshCw,
+  CalendarPlus,
+  Activity,
+  UserPlus,
+  Shuffle,
   Sparkles,
   LogOut,
   UserCheck,
@@ -245,9 +245,9 @@ export const AdminPortal = () => {
       </header>
 
       {/* Admin Side Drawer */}
-      <AdminDrawer 
-        isOpen={isDrawerOpen} 
-        onClose={() => setIsDrawerOpen(false)} 
+      <AdminDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         currentUser={currentUser}
@@ -274,22 +274,22 @@ export const AdminPortal = () => {
             <div className="admin-quick-stats">
               <span><b>{totalPlayers}</b> Pemain Terdaftar</span>
               <span className="stat-sep">•</span>
-              <span><b>{totalTeams}</b> Tim PB</span>
+              <span><b>{totalTeams}</b> Tim</span>
               <span className="stat-sep">•</span>
               <span><b>{finishedMatches}/{totalMatches}</b> Laga Selesai</span>
             </div>
           </div>
 
           <div className="admin-quick-right header-actions-group">
-            <button 
-              onClick={() => setActiveTab('draw')} 
+            <button
+              onClick={() => setActiveTab('draw')}
               className={`btn btn-sm ${activeTab === 'draw' ? 'btn-primary' : 'btn-outline-primary'}`}
               title="Buka Alat Grading & Kocok Tim"
             >
               <Shuffle size={14} /> <span>Kocok Tim (Pot Draw)</span>
             </button>
-            <button 
-              onClick={() => setActiveTab('doorprize')} 
+            <button
+              onClick={() => setActiveTab('doorprize')}
               className={`btn btn-sm ${activeTab === 'doorprize' ? 'btn-primary' : 'btn-outline-primary'}`}
               title="Buka Fitur Undian & Spin Doorprize"
             >

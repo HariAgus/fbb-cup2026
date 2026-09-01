@@ -1,20 +1,20 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  X, 
-  LogOut, 
-  ExternalLink, 
-  RefreshCw, 
-  Shuffle, 
-  Users, 
-  Calendar, 
-  Table2, 
-  Award, 
-  Cloud, 
-  Activity, 
-  ShieldCheck, 
-  Plus, 
-  UserPlus, 
+import {
+  X,
+  LogOut,
+  ExternalLink,
+  RefreshCw,
+  Shuffle,
+  Users,
+  Calendar,
+  Table2,
+  Award,
+  Cloud,
+  Activity,
+  ShieldCheck,
+  Plus,
+  UserPlus,
   CalendarPlus,
   Flame,
   CheckCircle2,
@@ -76,8 +76,8 @@ export const AdminDrawer = ({
                 <span className="online-dot" /> Online
               </span>
             </div>
-            <button 
-              onClick={onClose} 
+            <button
+              onClick={onClose}
               className="drawer-close-btn"
               title="Tutup Menu"
             >
@@ -88,9 +88,9 @@ export const AdminDrawer = ({
           <div className="admin-drawer-profile">
             <div className="drawer-avatar">
               {currentUser?.photoURL ? (
-                <img 
-                  src={currentUser.photoURL} 
-                  alt={currentUser.displayName || 'Admin'} 
+                <img
+                  src={currentUser.photoURL}
+                  alt={currentUser.displayName || 'Admin'}
                   className="drawer-avatar-img"
                 />
               ) : (
@@ -117,7 +117,7 @@ export const AdminDrawer = ({
             </div>
             <div className="stat-mini-tile">
               <span className="stat-mini-num">{totalTeams}</span>
-              <span className="stat-mini-lbl">Tim PB</span>
+              <span className="stat-mini-lbl">Tim</span>
             </div>
             <div className="stat-mini-tile">
               <span className="stat-mini-num">{finishedMatches}/{totalMatches}</span>
@@ -229,8 +229,8 @@ export const AdminDrawer = ({
 
         {/* Drawer Footer: Mode Pengunjung & Logout */}
         <div className="admin-drawer-footer">
-          <Link 
-            to="/fbb-cup2026" 
+          <Link
+            to="/fbb-cup2026"
             className="drawer-public-link"
             onClick={onClose}
           >

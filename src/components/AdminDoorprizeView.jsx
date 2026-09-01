@@ -2,19 +2,19 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import confetti from 'canvas-confetti';
 import { useTournament } from '../context/TournamentContext';
 import { doorprizeAudio } from '../services/doorprizeAudio';
-import { 
-  Gift, 
-  Sparkles, 
-  Shuffle, 
-  Trophy, 
-  Volume2, 
-  VolumeX, 
-  RotateCcw, 
-  CheckCircle2, 
-  Trash2, 
-  Share2, 
-  Users, 
-  Play, 
+import {
+  Gift,
+  Sparkles,
+  Shuffle,
+  Trophy,
+  Volume2,
+  VolumeX,
+  RotateCcw,
+  CheckCircle2,
+  Trash2,
+  Share2,
+  Users,
+  Play,
   Layers,
   Search,
   Check,
@@ -24,14 +24,20 @@ import {
 } from 'lucide-react';
 
 const PRIZE_SUGGESTIONS = [
-  '🏸 Raket Yonex Astrox 88D Pro',
-  '🎒 Tas Ransel Raket 6-R',
-  '👟 Sepatu Badminton Li-Ning',
+  '🔪 1 Set pisau',
+  '🎒 Tas Sepatu Ortuseight',
+  '🥤 Thumbler LocknLock',
   '🎽 Jersey Eksklusif FBB 2026',
-  '🎟️ Voucher Belanja Rp 500.000',
-  '🥤 Tumbler Termos Premium FBB',
-  '🏸 1 Slop Shuttlecock Turnamen',
-  '🪢 Paket Senar BG66 + Pasang'
+  '🌬️ Mini Fan Portable',
+  '☁️ Cushion Wrap Badminton',
+  '🌂 Payung',
+  '🎧 Advan TWS Bluetooth',
+  '🧦 Kaos Kaki Badminton',
+  '🎧 Booming True Wireles Stereo',
+  '🎒 Tas Ransel badminton',
+  '🎧 Headphone NOVABOOM',
+  '🧵 Senar Raket Hundred',
+  '⚡️Power Bank 1000mAh'
 ];
 
 const WHEEL_COLORS = [
