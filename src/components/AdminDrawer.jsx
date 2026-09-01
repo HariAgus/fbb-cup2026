@@ -17,8 +17,10 @@ import {
   UserPlus, 
   CalendarPlus,
   Flame,
-  CheckCircle2
+  CheckCircle2,
+  Gift
 } from 'lucide-react';
+import { useTournament } from '../context/TournamentContext';
 
 export const AdminDrawer = ({
   isOpen,
@@ -41,8 +43,12 @@ export const AdminDrawer = ({
 }) => {
   if (!isOpen) return null;
 
+  const { data } = useTournament();
+  const totalDoorprizes = (data?.doorprizes || []).length;
+
   const navItems = [
     { id: 'draw', label: 'Grading & Undian Tim', icon: Shuffle, badge: 'Pot Draw' },
+    { id: 'doorprize', label: 'Spin & Undian Doorprize', icon: Gift, count: totalDoorprizes > 0 ? `${totalDoorprizes} Hadiah` : 'Undi 🎁' },
     { id: 'players', label: 'Manajemen Pemain', icon: Activity, count: totalPlayers },
     { id: 'teams', label: 'Kelola Tim & Skuad', icon: Users, count: totalTeams },
     { id: 'matches', label: 'Update Skor & Jadwal', icon: Calendar, count: `${finishedMatches}/${totalMatches}` },

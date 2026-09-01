@@ -814,6 +814,53 @@ export const TournamentProvider = ({ children }) => {
     }
   };
 
+  // ---------------- DOORPRIZE DRAW & HISTORY ACTIONS ----------------
+  const addDoorprizeDraw = ({ prizeName, quantity = 1, winners = [], notes = '' }) => {
+    if (!prizeName || winners.length === 0) {
+      showToast('Nama hadiah atau pemenang tidak boleh kosong', 'error');
+      return null;
+    }
+
+    const newDraw = {
+      id: `dp-${Date.now()}`,
+      prizeName: prizeName.trim(),
+      quantity: Number(quantity) || winners.length,
+      drawnAt: new Date().toISOString(),
+      notes: notes ? notes.trim() : '',
+      winners: winners.map((w) => ({
+        playerId: w.playerId || w.id,
+        playerName: w.playerName || w.name,
+        playerLevel: w.playerLevel || w.level || 'B',
+        teamName: w.teamName || '',
+        phone: w.phone || ''
+      }))
+    };
+
+    setData((prev) => ({
+      ...prev,
+      doorprizes: [newDraw, ...(prev.doorprizes || [])]
+    }));
+
+    showToast(`🎉 Undian doorprize "${prizeName}" berhasil disimpan & dipublikasikan!`, 'success');
+    return newDraw;
+  };
+
+  const deleteDoorprizeDraw = (drawId) => {
+    setData((prev) => ({
+      ...prev,
+      doorprizes: (prev.doorprizes || []).filter((dp) => dp.id !== drawId)
+    }));
+    showToast('Catatan undian doorprize telah dihapus.', 'info');
+  };
+
+  const resetDoorprizeHistory = () => {
+    setData((prev) => ({
+      ...prev,
+      doorprizes: []
+    }));
+    showToast('Seluruh riwayat undian doorprize telah direset.', 'info');
+  };
+
   const value = {
     data,
     setData,
@@ -845,6 +892,10 @@ export const TournamentProvider = ({ children }) => {
     deleteMatch,
     // Knockout methods
     updateKnockoutScore,
+    // Doorprize methods
+    addDoorprizeDraw,
+    deleteDoorprizeDraw,
+    resetDoorprizeHistory,
     // Authentication methods & state (Pure Firebase Auth)
     currentUser,
     authLoading,

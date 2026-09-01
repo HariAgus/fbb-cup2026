@@ -3189,3 +3189,935 @@
   color: #FFFFFF;
 }
 
+/* ==========================================================================
+   🎁 DOORPRIZE LUCKY DRAW & HISTORY STYLES
+   ========================================================================== */
+
+.doorprize-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header & Live Stats */
+.doorprize-header-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 24px 28px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, #FFFFFF 0%, #FFF7ED 100%);
+  border: 1px solid #FFEDD5;
+  box-shadow: 0 4px 20px rgba(224, 96, 32, 0.08);
+}
+
+.doorprize-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.doorprize-icon-badge {
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #E06020 0%, #F97316 100%);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 16px rgba(224, 96, 32, 0.35);
+  flex-shrink: 0;
+}
+
+.doorprize-header-stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.doorprize-stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #FFFFFF;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.doorprize-stat-pill .stat-label {
+  display: block;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+.doorprize-stat-pill .stat-value {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text-heading);
+  line-height: 1.2;
+}
+
+/* Main Grid: Form Setup & Wheel Stage */
+.doorprize-main-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 900px) {
+  .doorprize-main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.doorprize-form-panel,
+.doorprize-stage-panel {
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  background: #FFFFFF;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+}
+
+.panel-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.panel-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-heading);
+}
+
+.sound-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  background: #F8FAFC;
+  color: var(--text-heading);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sound-toggle-btn.active {
+  background: #EFF6FF;
+  border-color: #BFDBFE;
+  color: #2563EB;
+}
+
+.sound-toggle-btn.muted {
+  background: #FEF2F2;
+  border-color: #FECACA;
+  color: #DC2626;
+}
+
+/* Prize suggestion chips */
+.prize-chip {
+  padding: 5px 10px;
+  border-radius: 20px;
+  background: #F1F5F9;
+  border: 1px solid var(--border-color);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-heading);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.prize-chip:hover {
+  background: #E2E8F0;
+  border-color: #CBD5E1;
+}
+
+.prize-chip.active {
+  background: #FFF7ED;
+  border-color: #FDBA74;
+  color: #C2410C;
+  font-weight: 700;
+}
+
+/* Quantity stepper */
+.quantity-stepper {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #FFFFFF;
+}
+
+.step-btn {
+  width: 42px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F8FAFC;
+  border: none;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-heading);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.step-btn:hover:not(:disabled) {
+  background: #E2E8F0;
+}
+
+.quantity-input {
+  flex: 1;
+  text-align: center;
+  border: none;
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--text-heading);
+  outline: none;
+}
+
+/* Spin mode selector */
+.spin-mode-selector {
+  display: flex;
+  background: #F1F5F9;
+  padding: 3px;
+  border-radius: 10px;
+  gap: 4px;
+}
+
+.mode-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 8px;
+  border: none;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.mode-btn.active {
+  background: #FFFFFF;
+  color: var(--primary);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+/* Pool filter box */
+.pool-filter-box {
+  background: #F8FAFC;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.level-pills-group {
+  display: flex;
+  gap: 4px;
+  background: #E2E8F0;
+  padding: 3px;
+  border-radius: 8px;
+}
+
+.level-pill-btn {
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: none;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #64748B;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.level-pill-btn.active {
+  background: #FFFFFF;
+  color: var(--text-heading);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.search-pool-input-wrapper {
+  position: relative;
+  margin-top: 10px;
+}
+
+.search-pool-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94A3B8;
+}
+
+.search-pool-input {
+  width: 100%;
+  padding: 7px 10px 7px 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: #FFFFFF;
+  outline: none;
+}
+
+.search-pool-input:focus {
+  border-color: var(--primary);
+}
+
+/* Big Spin Button */
+.spin-trigger-btn {
+  height: 52px;
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  background: linear-gradient(135deg, #E06020 0%, #EA580C 100%);
+  border: none;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 8px 24px rgba(224, 96, 32, 0.35);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.spin-trigger-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(224, 96, 32, 0.45);
+}
+
+.spin-trigger-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* ================= Wheel of Fortune Stage ================= */
+.stage-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.stage-canvas-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 380px;
+  position: relative;
+  background: radial-gradient(circle, #F8FAFC 0%, #EDF2F7 100%);
+  border-radius: 16px;
+  border: 1px dashed var(--border-color);
+  padding: 16px;
+  overflow: hidden;
+}
+
+.wheel-wrapper {
+  position: relative;
+  width: 340px;
+  height: 340px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wheel-canvas {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: block;
+}
+
+.wheel-pointer-arrow {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+}
+
+.pointer-triangle {
+  width: 0;
+  height: 0;
+  border-left: 14px solid transparent;
+  border-right: 14px solid transparent;
+  border-top: 26px solid #DC2626;
+}
+
+.wheel-center-overlay-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  border: 4px solid #E06020;
+  color: #E06020;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease;
+}
+
+.wheel-center-overlay-btn:hover:not(:disabled) {
+  transform: translate(-50%, -50%) scale(1.08);
+}
+
+.wheel-center-overlay-btn.spinning {
+  animation: pulse 1s infinite;
+}
+
+/* Slot machine rapid reel */
+.slot-machine-wrapper {
+  width: 100%;
+  max-width: 320px;
+  text-align: center;
+}
+
+.slot-machine-box {
+  background: #0F172A;
+  border-radius: 16px;
+  padding: 24px;
+  border: 4px solid #F59E0B;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(245, 158, 11, 0.3);
+}
+
+.slot-icon-header {
+  color: #F59E0B;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  margin-bottom: 14px;
+}
+
+.slot-name-display {
+  background: #FFFFFF;
+  border-radius: 10px;
+  padding: 18px 12px;
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #0F172A;
+  min-height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+
+.slot-name-display.rolling {
+  color: #E06020;
+  animation: slotPulse 0.1s infinite alternate;
+}
+
+@keyframes slotPulse {
+  from { transform: scale(0.98); }
+  to { transform: scale(1.02); }
+}
+
+.current-prize-banner {
+  margin-top: 14px;
+  background: #FFF7ED;
+  border: 1px solid #FFEDD5;
+  border-radius: 10px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.current-prize-banner .prize-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.current-prize-banner .prize-title {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #C2410C;
+}
+
+/* ================= History List in Admin ================= */
+.doorprize-history-section {
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  background: #FFFFFF;
+  border: 1px solid var(--border-color);
+}
+
+.doorprize-history-item {
+  background: #F8FAFC;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 16px 20px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.doorprize-history-item:hover {
+  background: #FFFFFF;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+}
+
+.history-item-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed #E2E8F0;
+}
+
+.history-prize-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.history-winners-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+}
+
+.winner-pill-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #FFFFFF;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+}
+
+.winner-pill-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #E06020, #F97316);
+  color: #FFFFFF;
+  font-weight: 800;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ================= Celebration Modal ================= */
+.celebration-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(10px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.celebration-modal-card {
+  background: #FFFFFF;
+  border-radius: 24px;
+  max-width: 540px;
+  width: 100%;
+  padding: 32px;
+  text-align: center;
+  border: 2px solid #FFEDD5;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+  animation: modalScaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalScaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.celebration-header {
+  margin-bottom: 24px;
+}
+
+.celebration-crown {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: #FEF3C7;
+  border: 2px solid #FCD34D;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 14px;
+}
+
+.celebration-title {
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: #0F172A;
+  letter-spacing: -0.01em;
+}
+
+.celebration-subtitle {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.celebration-winners-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 280px;
+  overflow-y: auto;
+  margin-bottom: 24px;
+  padding: 4px;
+}
+
+.celebration-winner-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+  border: 1.5px solid #FDE68A;
+  text-align: left;
+}
+
+.winner-card-rank {
+  font-size: 0.95rem;
+  font-weight: 900;
+  color: #B45309;
+}
+
+.winner-card-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #E06020, #F97316);
+  color: #FFFFFF;
+  font-size: 1.1rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(224, 96, 32, 0.3);
+  flex-shrink: 0;
+}
+
+.winner-card-name {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #1E293B;
+  margin-bottom: 4px;
+}
+
+.winner-card-tags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.celebration-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ==========================================================================
+   PUBLIC USER DOORPRIZE HISTORY STYLES
+   ========================================================================== */
+
+.user-doorprize-view {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.public-doorprize-hero {
+  padding: 32px 36px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #FFFFFF 0%, #FFF7ED 50%, #FFEDD5 100%);
+  border: 1px solid #FED7AA;
+  text-align: center;
+  box-shadow: 0 8px 30px rgba(224, 96, 32, 0.08);
+}
+
+.hero-badge-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.public-doorprize-hero .hero-title {
+  font-size: 1.9rem;
+  font-weight: 900;
+  color: #0F172A;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+
+.public-doorprize-hero .hero-description {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  max-width: 620px;
+  margin: 0 auto 24px;
+}
+
+.public-doorprize-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.public-doorprize-stats .stat-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #FFFFFF;
+  padding: 12px 20px;
+  border-radius: 14px;
+  border: 1px solid #FFEDD5;
+  box-shadow: 0 4px 12px rgba(224, 96, 32, 0.06);
+  min-width: 170px;
+  text-align: left;
+}
+
+.stat-icon-wrapper {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-icon-wrapper.prize-icon {
+  background: #EFF6FF;
+  color: #2563EB;
+}
+
+.stat-icon-wrapper.winner-icon {
+  background: #FEF3C7;
+  color: #D97706;
+}
+
+.stat-icon-wrapper.player-icon {
+  background: #ECFDF5;
+  color: #059669;
+}
+
+.public-doorprize-stats .stat-num {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #0F172A;
+  line-height: 1.1;
+}
+
+.public-doorprize-stats .stat-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+/* Public Filter Bar */
+.public-filter-bar {
+  padding: 16px 20px;
+  border-radius: 14px;
+  background: #FFFFFF;
+  border: 1px solid var(--border-color);
+}
+
+.search-box-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-box-wrapper .search-icon {
+  position: absolute;
+  left: 12px;
+  color: #94A3B8;
+}
+
+.search-box-wrapper .search-input {
+  width: 100%;
+  padding: 9px 12px 9px 36px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: #F8FAFC;
+  font-size: 0.84rem;
+  outline: none;
+  transition: all 0.15s;
+}
+
+.search-box-wrapper .search-input:focus {
+  background: #FFFFFF;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+/* Doorprize Public Cards */
+.doorprize-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.public-doorprize-card {
+  border-radius: 18px;
+  background: #FFFFFF;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.public-doorprize-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.prize-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  background: linear-gradient(135deg, #FFF7ED 0%, #FFFFFF 100%);
+  border-bottom: 1px solid #FFEDD5;
+}
+
+.prize-info-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.prize-icon-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #FEF3C7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.prize-name {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.share-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: #FFFFFF;
+  color: var(--text-heading);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.share-btn:hover {
+  background: #F1F5F9;
+  border-color: #CBD5E1;
+}
+
+.prize-winners-container {
+  padding: 16px 20px;
+}
+
+.winners-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.winner-card-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #F8FAFC;
+  border: 1px solid var(--border-color);
+}
+
+.winner-rank-badge {
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: #94A3B8;
+  width: 24px;
+}
+
+.winner-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #E06020 0%, #F97316 100%);
+  color: #FFFFFF;
+  font-size: 0.88rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.team-badge {
+  background: #E2E8F0;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+

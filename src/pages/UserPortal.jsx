@@ -7,6 +7,7 @@ import { MatchesView } from '../components/MatchesView';
 import { TeamsView } from '../components/TeamsView';
 import { PlayersView } from '../components/PlayersView';
 import { KnockoutView } from '../components/KnockoutView';
+import { UserDoorprizeHistoryView } from '../components/UserDoorprizeHistoryView';
 import { RosterModal } from '../components/Modals/RosterModal';
 import { 
   Flame, 
@@ -15,7 +16,8 @@ import {
   Users, 
   Award, 
   ShieldCheck,
-  Activity
+  Activity,
+  Gift
 } from 'lucide-react';
 
 export const UserPortal = () => {
@@ -29,7 +31,8 @@ export const UserPortal = () => {
     { id: 'matches', label: 'Jadwal & Skor', icon: Calendar },
     { id: 'teams', label: 'Tim Badminton', icon: Users },
     { id: 'players', label: 'Data Pemain', icon: Activity },
-    { id: 'knockout', label: 'Bagan Playoff', icon: Award }
+    { id: 'knockout', label: 'Bagan Playoff', icon: Award },
+    { id: 'doorprize', label: 'Doorprize', icon: Gift }
   ];
 
   const handleViewRoster = (team) => {
@@ -124,6 +127,10 @@ export const UserPortal = () => {
           <KnockoutView
             onOpenKnockoutScoreModal={() => {}}
           />
+        )}
+
+        {activeTab === 'doorprize' && (
+          <UserDoorprizeHistoryView />
         )}
       </main>
 

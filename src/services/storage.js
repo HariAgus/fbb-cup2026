@@ -119,7 +119,8 @@ export const initialTournamentData = {
       date: '2026-09-20',
       time: '16:00 WIB'
     }
-  ]
+  ],
+  doorprizes: []
 };
 
 export const initialCloudSettings = {

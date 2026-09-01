@@ -10,6 +10,7 @@ import { PlayersView } from '../components/PlayersView';
 import { KnockoutView } from '../components/KnockoutView';
 import { CloudSyncView } from '../components/CloudSyncView';
 import { PlayerGradingAndDrawView } from '../components/PlayerGradingAndDrawView';
+import { AdminDoorprizeView } from '../components/AdminDoorprizeView';
 import { PlayerModal } from '../components/Modals/PlayerModal';
 import { TeamModal } from '../components/Modals/TeamModal';
 import { ScoreModal } from '../components/Modals/ScoreModal';
@@ -33,7 +34,8 @@ import {
   Sparkles,
   LogOut,
   UserCheck,
-  Menu
+  Menu,
+  Gift
 } from 'lucide-react';
 
 export const AdminPortal = () => {
@@ -75,6 +77,7 @@ export const AdminPortal = () => {
 
   const adminNavItems = [
     { id: 'draw', label: 'Undian Pot', icon: Shuffle },
+    { id: 'doorprize', label: 'Doorprize', icon: Gift },
     { id: 'players', label: 'Pemain', icon: Activity },
     { id: 'teams', label: 'Tim Skuad', icon: Users },
     { id: 'matches', label: 'Jadwal & Skor', icon: Calendar },
@@ -285,6 +288,13 @@ export const AdminPortal = () => {
             >
               <Shuffle size={14} /> <span>Kocok Tim (Pot Draw)</span>
             </button>
+            <button 
+              onClick={() => setActiveTab('doorprize')} 
+              className={`btn btn-sm ${activeTab === 'doorprize' ? 'btn-primary' : 'btn-outline-primary'}`}
+              title="Buka Fitur Undian & Spin Doorprize"
+            >
+              <Gift size={14} /> <span>Spin Doorprize</span>
+            </button>
             <button onClick={handleOpenAddPlayer} className="btn btn-sm btn-outline-primary">
               <UserPlus size={14} /> <span>Pemain Baru</span>
             </button>
@@ -309,6 +319,10 @@ export const AdminPortal = () => {
               onOpenAddPlayer={handleOpenAddPlayer}
               onEditPlayer={handleEditPlayer}
             />
+          )}
+
+          {activeTab === 'doorprize' && (
+            <AdminDoorprizeView />
           )}
 
           {activeTab === 'players' && (
