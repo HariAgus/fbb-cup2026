@@ -7,6 +7,7 @@ import {
   saveCloudSettings,
   syncWithGoogleSheets,
   syncWithFirebase,
+  subscribeToTournamentData,
   initialTournamentData
 } from '../services/storage';
 import {
@@ -55,6 +56,31 @@ export const TournamentProvider = ({ children }) => {
       setAuthLoading(false);
     }
   }, [cloudSettings.firebase?.projectId, cloudSettings.firebase?.apiKey]);
+
+  // Real-time synchronization with Firestore (Official Cloud Data)
+  useEffect(() => {
+    if (cloudSettings.firebase?.projectId && cloudSettings.firebase?.apiKey) {
+      const unsubscribe = subscribeToTournamentData(
+        cloudSettings.firebase,
+        (remoteData) => {
+          if (remoteData && remoteData.players && remoteData.players.length > 0) {
+            setData(remoteData);
+          }
+        },
+        (err) => {
+          console.warn('Firestore live listener notice:', err);
+        }
+      );
+      return () => {
+        if (typeof unsubscribe === 'function') unsubscribe();
+      };
+    }
+  }, [
+    cloudSettings.firebase?.projectId,
+    cloudSettings.firebase?.apiKey,
+    cloudSettings.firebase?.collectionName,
+    cloudSettings.firebase?.documentId
+  ]);
 
   useEffect(() => {
     saveTournamentData(data);
