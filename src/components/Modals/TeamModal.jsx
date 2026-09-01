@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTournament } from '../../context/TournamentContext';
 import { Plus, Users, Check, UserPlus } from 'lucide-react';
 
-const LOGO_EMOJIS = ['🏸', '⚡', '🔥', '🦅', '🛡️', '⚔️', '🎯', '👑', '🦁', '🚀', '🐉', '⭐'];
+const LOGO_EMOJIS = ['🏸', '⚡', '🔥', '🦅', '🛡️', '⚔️', '🎯', '👑', '🦁', '🚀', '🐉', '⭐', '🦏', '🐘', '🦜', '𓆌'];
 const PRESET_COLORS = ['#E06020', '#3B82F6', '#EF4444', '#10B981', '#8B5CF6', '#F59E0B', '#06B6D4', '#64748B'];
 
 export const TeamModal = ({ isOpen, onClose, teamToEdit = null }) => {
@@ -224,17 +224,15 @@ export const TeamModal = ({ isOpen, onClose, teamToEdit = null }) => {
                       <div
                         key={player.id}
                         onClick={() => togglePlayerSelection(player.id)}
-                        className={`flex items-center justify-between p-2 rounded cursor-pointer transition text-xs ${
-                          isSelected
-                            ? 'bg-orange-50 border border-orange-300 font-bold text-orange-950 shadow-2xs'
-                            : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-100'
-                        }`}
+                        className={`flex items-center justify-between p-2 rounded cursor-pointer transition text-xs ${isSelected
+                          ? 'bg-orange-50 border border-orange-300 font-bold text-orange-950 shadow-2xs'
+                          : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-100'
+                          }`}
                       >
                         <div className="flex items-center gap-2">
                           <div
-                            className={`w-4 h-4 rounded flex items-center justify-center border ${
-                              isSelected ? 'bg-primary border-primary text-white' : 'border-gray-300'
-                            }`}
+                            className={`w-4 h-4 rounded flex items-center justify-center border ${isSelected ? 'bg-primary border-primary text-white' : 'border-gray-300'
+                              }`}
                           >
                             {isSelected && <Check size={12} />}
                           </div>
