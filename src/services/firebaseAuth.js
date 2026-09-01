@@ -1,6 +1,4 @@
-import { initializeApp, getApps, getApp } from 'firebase/app';
 import {
-  getAuth,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
@@ -10,28 +8,17 @@ import {
   updateProfile,
   sendPasswordResetEmail
 } from 'firebase/auth';
-
-let firebaseAppInstance = null;
-let authInstance = null;
+import { getFirebaseAuthInstance } from './firebaseConfig';
 
 export const getFirebaseAuth = (firebaseConfig) => {
-  if (!firebaseConfig?.projectId || !firebaseConfig?.apiKey) {
-    return null;
-  }
-
   try {
-    if (!getApps().length) {
-      firebaseAppInstance = initializeApp(firebaseConfig);
-    } else {
-      firebaseAppInstance = getApp();
-    }
-    authInstance = getAuth(firebaseAppInstance);
-    return authInstance;
+    return getFirebaseAuthInstance(firebaseConfig);
   } catch (err) {
     console.error('Error initializing Firebase Auth:', err);
     return null;
   }
 };
+
 
 /**
  * Format Firebase Auth errors into friendly Indonesian messages

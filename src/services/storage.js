@@ -1,5 +1,5 @@
-import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getFirestore, doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
+import { defaultFirebaseConfig, getFirebaseDb } from './firebaseConfig';
+import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
 
 const LOCAL_STORAGE_KEY = 'fbb_merdeka_cup_2026_v7_grading';
 const SETTINGS_STORAGE_KEY = 'fbb_merdeka_cloud_settings_v7';
@@ -131,14 +131,7 @@ export const initialCloudSettings = {
     lastSync: null
   },
   firebase: {
-    apiKey: 'AIzaSyCuzSbizB8RU9tJgYD38HMFg9Yva3i-w2k',
-    authDomain: 'fbb-cup.firebaseapp.com',
-    projectId: 'fbb-cup',
-    storageBucket: 'fbb-cup.firebasestorage.app',
-    messagingSenderId: '',
-    appId: '',
-    collectionName: 'fbb_badminton_tournaments',
-    documentId: 'cup2026',
+    ...defaultFirebaseConfig,
     autoSync: true,
     lastSync: null
   }
@@ -172,13 +165,21 @@ export const loadCloudSettings = () => {
     const raw = localStorage.getItem(SETTINGS_STORAGE_KEY);
     if (!raw) return initialCloudSettings;
     const parsed = JSON.parse(raw);
-    // Ensure default firebase project configuration is preserved if empty
     return {
       ...initialCloudSettings,
       ...parsed,
       firebase: {
-        ...initialCloudSettings.firebase,
-        ...(parsed.firebase || {})
+        ...defaultFirebaseConfig,
+        ...(parsed.firebase || {}),
+        apiKey: parsed.firebase?.apiKey || defaultFirebaseConfig.apiKey,
+        projectId: parsed.firebase?.projectId || defaultFirebaseConfig.projectId,
+        authDomain: parsed.firebase?.authDomain || defaultFirebaseConfig.authDomain,
+        storageBucket: parsed.firebase?.storageBucket || defaultFirebaseConfig.storageBucket,
+        messagingSenderId: parsed.firebase?.messagingSenderId || defaultFirebaseConfig.messagingSenderId,
+        appId: parsed.firebase?.appId || defaultFirebaseConfig.appId,
+        measurementId: parsed.firebase?.measurementId || defaultFirebaseConfig.measurementId,
+        collectionName: parsed.firebase?.collectionName || defaultFirebaseConfig.collectionName,
+        documentId: parsed.firebase?.documentId || defaultFirebaseConfig.documentId
       }
     };
   } catch (err) {
@@ -219,29 +220,16 @@ export const syncWithGoogleSheets = async (webAppUrl, dataToSend = null) => {
 };
 
 // Firebase Firestore integration
-let firebaseAppInstance = null;
-let firestoreDbInstance = null;
-
 export const getFirestoreInstance = (firebaseConfig) => {
-  if (!firebaseConfig?.projectId || !firebaseConfig?.apiKey) {
-    throw new Error('Konfigurasi Firebase belum lengkap (Project ID & API Key wajib diisi)');
-  }
-  if (!getApps().length) {
-    firebaseAppInstance = initializeApp(firebaseConfig);
-  } else {
-    firebaseAppInstance = getApp();
-  }
-  firestoreDbInstance = getFirestore(firebaseAppInstance);
-  return firestoreDbInstance;
+  return getFirebaseDb(firebaseConfig);
 };
 
 // Real-time listener for Firestore document
 export const subscribeToTournamentData = (firebaseConfig, onDataReceived, onError) => {
-  if (!firebaseConfig?.projectId || !firebaseConfig?.apiKey) return () => {};
   try {
     const db = getFirestoreInstance(firebaseConfig);
-    const colName = firebaseConfig.collectionName || 'fbb_badminton_tournaments';
-    const docId = firebaseConfig.documentId || firebaseConfig.docId || 'cup2026';
+    const colName = firebaseConfig?.collectionName || defaultFirebaseConfig.collectionName;
+    const docId = firebaseConfig?.documentId || firebaseConfig?.docId || defaultFirebaseConfig.documentId;
     const docRef = doc(db, colName, docId);
 
     return onSnapshot(
@@ -286,13 +274,9 @@ const formatFirestoreError = (err) => {
 };
 
 export const syncWithFirebase = async (firebaseConfig, dataToSend = null) => {
-  if (!firebaseConfig?.projectId || !firebaseConfig?.apiKey) {
-    throw new Error('Project ID dan API Key Firebase wajib diisi terlebih dahulu di tab Firebase.');
-  }
-
   const db = getFirestoreInstance(firebaseConfig);
-  const colName = firebaseConfig.collectionName || 'fbb_badminton_tournaments';
-  const docId = firebaseConfig.documentId || firebaseConfig.docId || 'cup2026';
+  const colName = firebaseConfig?.collectionName || defaultFirebaseConfig.collectionName;
+  const docId = firebaseConfig?.documentId || firebaseConfig?.docId || defaultFirebaseConfig.documentId;
   const docRef = doc(db, colName, docId);
 
   // 8-second Timeout Guard to prevent infinite hang
@@ -331,4 +315,5 @@ export const syncWithFirebase = async (firebaseConfig, dataToSend = null) => {
     throw new Error(formatFirestoreError(err));
   }
 };
+
 
