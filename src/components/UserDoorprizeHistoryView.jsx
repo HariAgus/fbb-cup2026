@@ -1,16 +1,16 @@
 import React, { useState, useMemo } from 'react';
 import { useTournament } from '../context/TournamentContext';
-import { 
-  Gift, 
-  Trophy, 
-  Sparkles, 
-  Search, 
-  Users, 
-  Share2, 
-  Check, 
-  Award, 
-  Crown, 
-  Clock 
+import {
+  Gift,
+  Trophy,
+  Sparkles,
+  Search,
+  Users,
+  Share2,
+  Check,
+  Award,
+  Crown,
+  Clock
 } from 'lucide-react';
 
 export const UserDoorprizeHistoryView = () => {
@@ -30,7 +30,7 @@ export const UserDoorprizeHistoryView = () => {
   const filteredDoorprizes = useMemo(() => {
     return doorprizes.filter((dp) => {
       const matchesPrize = (dp.prizeName || '').toLowerCase().includes(searchQuery.toLowerCase());
-      
+
       const hasMatchingWinner = (dp.winners || []).some((w) => {
         const matchesName = (w.playerName || '').toLowerCase().includes(searchQuery.toLowerCase());
         const matchesTeam = (w.teamName || '').toLowerCase().includes(searchQuery.toLowerCase());
@@ -141,14 +141,14 @@ export const UserDoorprizeHistoryView = () => {
       {/* 🎁 Doorprize History Feed */}
       <div className="doorprize-feed-container mt-6">
         {filteredDoorprizes.length === 0 ? (
-          <div className="empty-public-doorprize glass-card text-center py-12">
-            <div className="empty-icon-circle mx-auto mb-4">
-              <Gift size={40} className="text-gray-400 animate-pulse" />
+          <div className="empty-public-doorprize glass-card">
+            <div className="empty-icon-circle">
+              <Gift size={38} className="text-primary animate-bounce" />
             </div>
-            <h3 className="font-bold text-gray-800 text-lg mb-1">
+            <h3 className="empty-title">
               {doorprizes.length === 0 ? 'Undian Doorprize Belum Dimulai' : 'Tidak Ada Hasil yang Cocok'}
             </h3>
-            <p className="text-xs text-muted max-w-md mx-auto">
+            <p className="empty-description">
               {doorprizes.length === 0
                 ? 'Panitia akan segera melaksanakan pengundian doorprize selama turnamen berlangsung. Pantau halaman ini secara berkala!'
                 : 'Coba ubah kata kunci pencarian atau filter level Anda.'}
