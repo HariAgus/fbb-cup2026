@@ -155,20 +155,25 @@ export const UserDoorprizeHistoryView = () => {
             </p>
           </div>
         ) : (
-          <div className="doorprize-card-grid">
-            {filteredDoorprizes.map((dp) => (
+          <div className="doorprize-vertical-feed">
+            {filteredDoorprizes.map((dp, drawIdx) => (
               <div key={dp.id} className="public-doorprize-card glass-card">
                 {/* Card Top: Prize Header */}
                 <div className="prize-card-header">
                   <div className="prize-info-left">
                     <div className="prize-icon-circle">
-                      <Trophy size={20} className="text-amber-500" />
+                      <Trophy size={22} className="text-amber-500" />
                     </div>
                     <div>
-                      <h3 className="prize-name">{dp.prizeName}</h3>
-                      <div className="prize-meta flex items-center gap-2 text-xs text-muted mt-0.5">
-                        <span className="flex items-center gap-1">
-                          <Clock size={12} />
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="prize-name">{dp.prizeName}</h3>
+                        <span className="badge badge-primary text-xs font-bold px-2 py-0.5">
+                          {dp.winners?.length || 1} Pemenang
+                        </span>
+                      </div>
+                      <div className="prize-meta flex items-center gap-2 text-xs text-muted mt-1">
+                        <span className="flex items-center gap-1 font-medium">
+                          <Clock size={13} className="text-gray-400" />
                           {new Date(dp.drawnAt).toLocaleDateString('id-ID', {
                             day: 'numeric',
                             month: 'short',
@@ -178,9 +183,7 @@ export const UserDoorprizeHistoryView = () => {
                           })} WIB
                         </span>
                         <span>•</span>
-                        <span className="font-semibold text-primary">
-                          {dp.winners?.length || 1} Pemenang
-                        </span>
+                        <span className="text-2xs text-gray-500">Undian #{filteredDoorprizes.length - drawIdx}</span>
                       </div>
                     </div>
                   </div>
@@ -192,49 +195,74 @@ export const UserDoorprizeHistoryView = () => {
                   >
                     {copiedId === dp.id ? (
                       <>
-                        <Check size={14} className="text-emerald-500" />
+                        <Check size={14} className="text-emerald-600" />
                         <span className="text-xs text-emerald-600 font-bold">Disalin</span>
                       </>
                     ) : (
                       <>
                         <Share2 size={14} />
-                        <span className="text-xs">Bagikan</span>
+                        <span className="text-xs font-semibold">Bagikan</span>
                       </>
                     )}
                   </button>
                 </div>
 
-                {/* Card Body: Winners Badges */}
+                {/* Card Body: Vertical Winners List */}
                 <div className="prize-winners-container">
-                  <div className="winners-label flex items-center gap-1.5 text-xs font-bold text-gray-700 mb-2.5">
-                    <Award size={14} className="text-primary" />
-                    <span>Daftar Pemenang Beruntung:</span>
+                  <div className="winners-label flex items-center justify-between text-xs font-bold text-gray-700 mb-3 pb-2 border-b border-gray-100">
+                    <div className="flex items-center gap-1.5 text-gray-900">
+                      <Award size={15} className="text-primary" />
+                      <span>Daftar Pemenang Hadiah:</span>
+                    </div>
+                    <span className="text-2xs text-muted font-normal">
+                      Total: <b>{dp.winners?.length || 1}</b> Peserta
+                    </span>
                   </div>
 
-                  <div className="winners-grid">
-                    {(dp.winners || []).map((winner, idx) => (
-                      <div key={idx} className="winner-card-item">
-                        <div className="winner-rank-badge">#{idx + 1}</div>
-                        <div className="winner-avatar">
-                          {(winner.playerName || 'P')[0].toUpperCase()}
-                        </div>
-                        <div className="winner-details min-w-0 flex-1">
-                          <div className="winner-name truncate font-bold text-sm text-gray-900">
-                            {winner.playerName}
+                  <div className="winners-vertical-list space-y-2.5">
+                    {(dp.winners || []).map((winner, idx) => {
+                      const lvl = (winner.playerLevel || 'B').toUpperCase();
+                      return (
+                        <div key={idx} className="winner-row-card">
+                          {/* Rank Badge */}
+                          <div className="winner-rank-pill">
+                            <span>#{idx + 1}</span>
                           </div>
-                          <div className="winner-sub flex items-center gap-1.5 mt-0.5">
-                            <span className={`level-badge level-${(winner.playerLevel || 'b').toLowerCase()} text-[10px]`}>
-                              Level {winner.playerLevel || 'B'}
-                            </span>
-                            {winner.teamName && (
-                              <span className="team-badge text-[10px] text-gray-600 truncate">
-                                🏸 {winner.teamName}
+
+                          {/* Player Avatar */}
+                          <div className="winner-avatar">
+                            {(winner.playerName || 'P')[0].toUpperCase()}
+                          </div>
+
+                          {/* Player Info Details */}
+                          <div className="winner-details min-w-0 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="winner-name font-bold text-sm text-gray-900">
+                                {winner.playerName}
                               </span>
+                              <span className={`badge-level badge-level-${lvl.toLowerCase()} text-3xs py-0.5 px-1.5 font-bold`}>
+                                Level {lvl}
+                              </span>
+                            </div>
+
+                            {winner.teamName && (
+                              <div className="winner-team-text text-xs text-gray-500 mt-0.5 flex items-center gap-1 truncate">
+                                <span>🏸 Tim:</span>
+                                <span className="font-semibold text-gray-700">{winner.teamName}</span>
+                              </div>
                             )}
                           </div>
+
+                          {/* Right Winning Badge */}
+                          <div className="winner-status-badge">
+                            <span className="badge badge-finished text-3xs font-bold flex items-center gap-1">
+                              <span>Pemenang Sah</span>
+                              <Crown size={11} className="text-amber-500" />
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               </div>

@@ -4001,123 +4001,176 @@
   box-shadow: 0 0 0 3px var(--primary-glow);
 }
 
-/* Doorprize Public Cards */
-.doorprize-card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 20px;
+/* Doorprize Vertical Feed (Clean 1-Column Layout) */
+.doorprize-vertical-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 960px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .public-doorprize-card {
-  border-radius: 18px;
+  border-radius: 20px;
   background: #FFFFFF;
-  border: 1px solid var(--border-color);
+  border: 1px solid #FED7AA;
   overflow: hidden;
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 4px 20px rgba(224, 96, 32, 0.06);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .public-doorprize-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 8px 30px rgba(224, 96, 32, 0.12);
 }
 
 .prize-card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 20px;
+  padding: 20px 24px;
   background: linear-gradient(135deg, #FFF7ED 0%, #FFFFFF 100%);
   border-bottom: 1px solid #FFEDD5;
+  flex-wrap: wrap;
+  gap: 14px;
 }
 
 .prize-info-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .prize-icon-circle {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: #FEF3C7;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+  border: 1.5px solid #FCD34D;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 4px 10px rgba(245, 158, 11, 0.2);
   flex-shrink: 0;
 }
 
 .prize-name {
-  font-size: 0.98rem;
+  font-size: 1.15rem;
   font-weight: 800;
   color: #0F172A;
+  letter-spacing: -0.01em;
 }
 
 .share-btn {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 6px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid #E2E8F0;
   background: #FFFFFF;
   color: var(--text-heading);
   cursor: pointer;
-  transition: all 0.15s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  transition: all 0.15s ease;
 }
 
 .share-btn:hover {
-  background: #F1F5F9;
-  border-color: #CBD5E1;
+  background: #FFF7ED;
+  border-color: #FDBA74;
+  color: #C2410C;
 }
 
 .prize-winners-container {
-  padding: 16px 20px;
+  padding: 20px 24px;
 }
 
-.winners-grid {
+/* Vertical Winner Row Cards */
+.winners-vertical-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
-.winner-card-item {
+.winner-row-card {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
-  border-radius: 12px;
+  gap: 14px;
+  padding: 12px 18px;
+  border-radius: 14px;
   background: #F8FAFC;
-  border: 1px solid var(--border-color);
+  border: 1px solid #E2E8F0;
+  transition: all 0.2s ease;
 }
 
-.winner-rank-badge {
-  font-size: 0.76rem;
-  font-weight: 800;
-  color: #94A3B8;
-  width: 24px;
+.winner-row-card:hover {
+  background: #FFFFFF;
+  border-color: #FED7AA;
+  box-shadow: 0 4px 14px rgba(224, 96, 32, 0.08);
+  transform: translateX(3px);
 }
 
-.winner-avatar {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #E06020 0%, #F97316 100%);
-  color: #FFFFFF;
-  font-size: 0.88rem;
-  font-weight: 800;
+.winner-rank-pill {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: #FEF3C7;
+  border: 1px solid #FDE68A;
+  color: #B45309;
+  font-size: 0.78rem;
+  font-weight: 900;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 
-.team-badge {
-  background: #E2E8F0;
-  padding: 1px 6px;
-  border-radius: 4px;
-  font-weight: 600;
+.winner-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #E06020 0%, #F97316 100%);
+  color: #FFFFFF;
+  font-size: 0.95rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 8px rgba(224, 96, 32, 0.25);
+  flex-shrink: 0;
+}
+
+.winner-name {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.winner-status-badge {
+  flex-shrink: 0;
+}
+
+/* Admin History Vertical Winner Row Item */
+.history-winners-vertical-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-winner-row-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  transition: all 0.15s ease;
+}
+
+.admin-winner-row-item:hover {
+  border-color: #CBD5E1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 /* ==========================================================================

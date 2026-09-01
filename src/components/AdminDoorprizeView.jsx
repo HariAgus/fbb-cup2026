@@ -725,35 +725,50 @@ export const AdminDoorprizeView = () => {
                   </div>
                 </div>
 
-                {/* Winners Grid */}
-                <div className="history-winners-grid">
-                  {(dp.winners || []).map((w, wIdx) => (
-                    <div key={wIdx} className="winner-pill-card">
-                      <div className="winner-pill-avatar">
-                        {(w.playerName || 'P')[0].toUpperCase()}
-                      </div>
-                      <div className="winner-pill-info min-w-0">
-                        <div className="winner-pill-name font-bold text-xs text-gray-900 truncate">
-                          {w.playerName}
+                {/* Winners Vertical List */}
+                <div className="history-winners-vertical-list space-y-2">
+                  {(dp.winners || []).map((w, wIdx) => {
+                    const lvl = (w.playerLevel || 'B').toUpperCase();
+                    return (
+                      <div key={wIdx} className="admin-winner-row-item">
+                        <div className="winner-rank-pill">
+                          <span>#{wIdx + 1}</span>
                         </div>
-                        <div className="winner-pill-meta text-[11px] text-muted flex items-center gap-1.5">
-                          <span className={`level-badge level-${(w.playerLevel || 'b').toLowerCase()} text-[10px]`}>
-                            Lvl {w.playerLevel || 'B'}
-                          </span>
-                          {w.teamName && (
-                            <span className="team-tag text-[10px] truncate max-w-[110px]">
-                              {w.teamName}
+
+                        <div className="winner-pill-avatar">
+                          {(w.playerName || 'P')[0].toUpperCase()}
+                        </div>
+
+                        <div className="winner-pill-info min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-bold text-xs text-gray-900">
+                              {w.playerName}
                             </span>
-                          )}
-                          {w.phone && (
-                            <span className="phone-tag text-[10px] text-gray-500">
-                              <Phone size={9} className="inline mr-0.5" />{w.phone}
+                            <span className={`badge-level badge-level-${lvl.toLowerCase()} text-3xs py-0.5 px-1.5 font-bold`}>
+                              Level {lvl}
                             </span>
-                          )}
+                          </div>
+
+                          <div className="winner-pill-meta text-[11px] text-muted flex items-center gap-2 mt-0.5 flex-wrap">
+                            {w.teamName && (
+                              <span className="team-tag text-[11px] text-gray-600 font-medium">
+                                🏸 {w.teamName}
+                              </span>
+                            )}
+                            {w.phone && (
+                              <span className="phone-tag text-[11px] text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded font-mono">
+                                <Phone size={10} className="inline mr-1" />{w.phone}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="hidden sm:block text-2xs text-muted font-medium bg-gray-100 px-2 py-1 rounded">
+                          Terundi
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             ))}
