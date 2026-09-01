@@ -240,6 +240,96 @@ export const TournamentProvider = ({ children }) => {
     }));
   }, [data]);
 
+  const standings = calculateStandings;
+
+  // Real-time Playoff Bracket Synchronization from Live Standings (Rank 1 vs 3, Rank 2 vs 4)
+  useEffect(() => {
+    setData((prev) => {
+      const currentKms = prev.knockoutMatches || [];
+      const rank1 = standings[0]?.team;
+      const rank2 = standings[1]?.team;
+      const rank3 = standings[2]?.team;
+      const rank4 = standings[3]?.team;
+
+      const r1Id = rank1 ? rank1.id : null;
+      const r2Id = rank2 ? rank2.id : null;
+      const r3Id = rank3 ? rank3.id : null;
+      const r4Id = rank4 ? rank4.id : null;
+
+      let changed = false;
+      const updatedKms = currentKms.map((m) => {
+        if (m.id === 'sf-1') {
+          const expectedTitle = 'Juara 1 vs Juara 3 Klasemen';
+          const p1 = rank1 ? `Juara 1 (${rank1.name})` : 'Juara 1 Klasemen';
+          const p2 = rank3 ? `Juara 3 (${rank3.name})` : 'Juara 3 Klasemen';
+          if (
+            m.team1Id !== r1Id ||
+            m.team2Id !== r3Id ||
+            m.matchTitle !== expectedTitle ||
+            m.team1Placeholder !== p1 ||
+            m.team2Placeholder !== p2
+          ) {
+            changed = true;
+            return {
+              ...m,
+              stage: 'Semifinal 1',
+              matchTitle: expectedTitle,
+              team1Placeholder: p1,
+              team2Placeholder: p2,
+              team1Id: r1Id,
+              team2Id: r3Id
+            };
+          }
+        }
+        if (m.id === 'sf-2') {
+          const expectedTitle = 'Juara 2 vs Juara 4 Klasemen';
+          const p1 = rank2 ? `Juara 2 (${rank2.name})` : 'Juara 2 Klasemen';
+          const p2 = rank4 ? `Juara 4 (${rank4.name})` : 'Juara 4 Klasemen';
+          if (
+            m.team1Id !== r2Id ||
+            m.team2Id !== r4Id ||
+            m.matchTitle !== expectedTitle ||
+            m.team1Placeholder !== p1 ||
+            m.team2Placeholder !== p2
+          ) {
+            changed = true;
+            return {
+              ...m,
+              stage: 'Semifinal 2',
+              matchTitle: expectedTitle,
+              team1Placeholder: p1,
+              team2Placeholder: p2,
+              team1Id: r2Id,
+              team2Id: r4Id
+            };
+          }
+        }
+        if (m.id === 'final') {
+          const expectedTitle = 'Pemenang Semifinal 1 vs Pemenang Semifinal 2';
+          if (m.matchTitle !== expectedTitle) {
+            changed = true;
+            return {
+              ...m,
+              stage: 'Grand Final FBB Badminton 2026',
+              matchTitle: expectedTitle,
+              team1Placeholder: 'Pemenang Semifinal 1 (Juara 1 vs 3)',
+              team2Placeholder: 'Pemenang Semifinal 2 (Juara 2 vs 4)'
+            };
+          }
+        }
+        return m;
+      });
+
+      if (changed) {
+        return {
+          ...prev,
+          knockoutMatches: updatedKms
+        };
+      }
+      return prev;
+    });
+  }, [standings]);
+
   // ---------------- MASTER PLAYER ACTIONS & GRADING ----------------
   const addPlayer = (player) => {
     const newPlayer = {

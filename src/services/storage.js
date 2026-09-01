@@ -71,9 +71,9 @@ export const initialTournamentData = {
     {
       id: 'sf-1',
       stage: 'Semifinal 1',
-      matchTitle: 'Peringkat 1 vs Peringkat 4',
-      team1Placeholder: 'Peringkat 1 Klasemen',
-      team2Placeholder: 'Peringkat 4 Klasemen',
+      matchTitle: 'Juara 1 vs Juara 3 Klasemen',
+      team1Placeholder: 'Juara 1 Klasemen',
+      team2Placeholder: 'Juara 3 Klasemen',
       team1Id: null,
       team2Id: null,
       team1PlayerIds: [],
@@ -88,9 +88,9 @@ export const initialTournamentData = {
     {
       id: 'sf-2',
       stage: 'Semifinal 2',
-      matchTitle: 'Peringkat 2 vs Peringkat 3',
-      team1Placeholder: 'Peringkat 2 Klasemen',
-      team2Placeholder: 'Peringkat 3 Klasemen',
+      matchTitle: 'Juara 2 vs Juara 4 Klasemen',
+      team1Placeholder: 'Juara 2 Klasemen',
+      team2Placeholder: 'Juara 4 Klasemen',
       team1Id: null,
       team2Id: null,
       team1PlayerIds: [],
@@ -106,8 +106,8 @@ export const initialTournamentData = {
       id: 'final',
       stage: 'Grand Final FBB Badminton 2026',
       matchTitle: 'Pemenang Semifinal 1 vs Pemenang Semifinal 2',
-      team1Placeholder: 'Pemenang SF 1',
-      team2Placeholder: 'Pemenang SF 2',
+      team1Placeholder: 'Pemenang Semifinal 1 (Juara 1 vs 3)',
+      team2Placeholder: 'Pemenang Semifinal 2 (Juara 2 vs 4)',
       team1Id: null,
       team2Id: null,
       team1PlayerIds: [],
@@ -117,7 +117,7 @@ export const initialTournamentData = {
       detailScores: '',
       status: 'scheduled',
       date: '2026-09-20',
-      time: '16:00 WIB'
+      time: '10:00 WIB'
     }
   ],
   doorprizes: []
@@ -250,7 +250,7 @@ export const subscribeToTournamentData = (firebaseConfig, onDataReceived, onErro
     );
   } catch (err) {
     console.warn('Failed to subscribe to Firestore:', err);
-    return () => {};
+    return () => { };
   }
 };
 
