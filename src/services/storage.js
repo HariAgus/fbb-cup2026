@@ -83,7 +83,7 @@ export const initialTournamentData = {
       detailScores: '',
       status: 'scheduled',
       date: '2026-09-19',
-      time: '14:00 WIB'
+      time: '08:00 WIB'
     },
     {
       id: 'sf-2',
@@ -100,7 +100,7 @@ export const initialTournamentData = {
       detailScores: '',
       status: 'scheduled',
       date: '2026-09-19',
-      time: '15:30 WIB'
+      time: '08:00 WIB'
     },
     {
       id: 'final',
