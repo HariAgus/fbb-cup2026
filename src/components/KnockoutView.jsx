@@ -301,7 +301,7 @@ export const KnockoutView = ({ onOpenKnockoutScoreModal }) => {
             <div className="bracket-match-header">
               <span className="badge badge-gold text-xs font-bold">Perebutan Juara 1</span>
               <span className="text-xs text-muted flex items-center gap-1">
-                <Clock size={11} /> {finalMatch.time || '16:00 WIB'}
+                <Clock size={11} /> {finalMatch.time || '10:00 WIB'}
               </span>
             </div>
 

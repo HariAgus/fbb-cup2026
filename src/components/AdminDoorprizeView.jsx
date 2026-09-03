@@ -744,7 +744,7 @@ export const AdminDoorprizeView = () => {
                             <span className="font-bold text-xs text-gray-900">
                               {w.playerName}
                             </span>
-                            <span className={`badge-level badge-level-${lvl.toLowerCase()} text-3xs py-0.5 px-1.5 font-bold`}>
+                            <span className={`badge-level badge-level-${lvl.toLowerCase().replace('+', '-plus')} text-3xs py-0.5 px-1.5 font-bold`}>
                               Level {lvl}
                             </span>
                           </div>

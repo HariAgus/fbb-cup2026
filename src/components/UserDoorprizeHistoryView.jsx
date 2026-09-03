@@ -240,7 +240,7 @@ export const UserDoorprizeHistoryView = () => {
                               <span className="winner-name font-bold text-sm text-gray-900">
                                 {winner.playerName}
                               </span>
-                              <span className={`badge-level badge-level-${lvl.toLowerCase()} text-3xs py-0.5 px-1.5 font-bold`}>
+                              <span className={`badge-level badge-level-${lvl.toLowerCase().replace('+', '-plus')} text-3xs py-0.5 px-1.5 font-bold`}>
                                 Level {lvl}
                               </span>
                             </div>

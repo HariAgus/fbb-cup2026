@@ -102,6 +102,7 @@ export const PlayerModal = ({ isOpen, onClose, playerToEdit = null }) => {
                   className="form-control font-bold"
                 >
                   <option value="A">👑 Level A (Unggulan)</option>
+                  <option value="B+">⭐ Level B+ (Menengah Atas)</option>
                   <option value="B">⚡ Level B (Menengah)</option>
                   <option value="C">🛡️ Level C (Pemula)</option>
                 </select>

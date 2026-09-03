@@ -237,7 +237,7 @@ export const TeamModal = ({ isOpen, onClose, teamToEdit = null }) => {
                             {isSelected && <Check size={12} />}
                           </div>
                           <span className="font-medium text-gray-900">{player.name}</span>
-                          <span className={`badge-level badge-level-${lvl.toLowerCase()} text-3xs py-0 px-1 font-bold`}>
+                          <span className={`badge-level badge-level-${lvl.toLowerCase().replace('+', '-plus')} text-3xs py-0 px-1 font-bold`}>
                             {lvl}
                           </span>
                         </div>

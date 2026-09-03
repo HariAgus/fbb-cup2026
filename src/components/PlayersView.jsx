@@ -17,7 +17,7 @@ export const PlayersView = ({ onOpenAddPlayer, onEditPlayer }) => {
   const { data, isAdmin, deletePlayer, updatePlayerLevel } = useTournament();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all'); // 'all' | 'assigned' | 'free'
-  const [levelFilter, setLevelFilter] = useState('all'); // 'all' | 'A' | 'B' | 'C'
+  const [levelFilter, setLevelFilter] = useState('all'); // 'all' | 'A' | 'B+' | 'B' | 'C'
 
   const players = data.players || [];
   const teams = data.teams || [];
@@ -46,6 +46,7 @@ export const PlayersView = ({ onOpenAddPlayer, onEditPlayer }) => {
 
   const unassignedCount = players.filter((p) => !p.teamId).length;
   const countA = players.filter((p) => (p.level || 'B') === 'A').length;
+  const countBPlus = players.filter((p) => (p.level || 'B') === 'B+').length;
   const countB = players.filter((p) => (p.level || 'B') === 'B').length;
   const countC = players.filter((p) => (p.level || 'B') === 'C').length;
 
@@ -59,7 +60,7 @@ export const PlayersView = ({ onOpenAddPlayer, onEditPlayer }) => {
             Manajemen Data Pemain Badminton
           </h2>
           <p className="view-subtitle">
-            Database seluruh pemain turnamen lengkap dengan grading level kemampuan (A, B, C) untuk undian tim seimbang.
+            Database seluruh pemain turnamen lengkap dengan grading level kemampuan (A, B+, B, C) untuk undian tim seimbang.
           </p>
         </div>
 
@@ -97,6 +98,12 @@ export const PlayersView = ({ onOpenAddPlayer, onEditPlayer }) => {
             className={`status-filter-btn ${levelFilter === 'A' ? 'active' : ''}`}
           >
             👑 Level A ({countA})
+          </button>
+          <button
+            onClick={() => setLevelFilter('B+')}
+            className={`status-filter-btn ${levelFilter === 'B+' ? 'active' : ''}`}
+          >
+            ⭐ Level B+ ({countBPlus})
           </button>
           <button
             onClick={() => setLevelFilter('B')}
@@ -177,10 +184,12 @@ export const PlayersView = ({ onOpenAddPlayer, onEditPlayer }) => {
                         </div>
                       </td>
                       <td>
-                        <span className={`badge-level badge-level-${lvl.toLowerCase()} font-bold`}>
+                        <span className={`badge-level badge-level-${lvl.toLowerCase().replace('+', '-plus')} font-bold`}>
                           {lvl === 'A' && '👑 Level A'}
+                          {lvl === 'B+' && '⭐ Level B+'}
                           {lvl === 'B' && '⚡ Level B'}
                           {lvl === 'C' && '🛡️ Level C'}
+                          {!['A', 'B+', 'B', 'C'].includes(lvl) && `Level ${lvl}`}
                         </span>
                       </td>
                       <td>

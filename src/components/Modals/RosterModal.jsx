@@ -84,6 +84,9 @@ export const RosterModal = ({ isOpen, onClose, team = null }) => {
                 <span className="badge-level badge-level-a text-2xs py-0.5 px-1.5 font-extrabold">
                   👑 {teamPlayers.filter((p) => (p.level || 'B') === 'A').length}A
                 </span>
+                <span className="badge-level badge-level-b-plus text-2xs py-0.5 px-1.5 font-extrabold">
+                  ⭐ {teamPlayers.filter((p) => (p.level || 'B') === 'B+').length}B+
+                </span>
                 <span className="badge-level badge-level-b text-2xs py-0.5 px-1.5 font-extrabold">
                   ⚡ {teamPlayers.filter((p) => (p.level || 'B') === 'B').length}B
                 </span>
@@ -124,7 +127,7 @@ export const RosterModal = ({ isOpen, onClose, team = null }) => {
                         <div className="min-w-0">
                           <div className="font-bold text-sm text-gray-900 truncate flex items-center gap-2">
                             <span>{p.name}</span>
-                            <span className={`badge-level badge-level-${lvl.toLowerCase()} text-2xs py-0 px-1.5 font-extrabold`}>
+                            <span className={`badge-level badge-level-${lvl.toLowerCase().replace('+', '-plus')} text-2xs py-0 px-1.5 font-extrabold`}>
                               Level {lvl}
                             </span>
                             {isCaptain && (

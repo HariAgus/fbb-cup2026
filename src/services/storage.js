@@ -37,13 +37,15 @@ export const initialTournamentData = {
     { id: 'p-11', name: 'Hendra Setiawan B.', gender: 'L', phone: '081198760003', level: 'A', teamId: null },
     { id: 'p-12', name: 'Mohammad Ahsan D.', gender: 'L', phone: '081198760004', level: 'A', teamId: null },
 
+    // Level B+
+    { id: 'p-13', name: 'Marcus Rian Pratama', gender: 'L', phone: '081234567892', level: 'B+', teamId: null },
+    { id: 'p-14', name: 'Greysia Dedi Saputra', gender: 'L', phone: '081234567893', level: 'B+', teamId: null },
+    { id: 'p-15', name: 'Hendra Gunawan', gender: 'L', phone: '081398765433', level: 'B+', teamId: null },
+    { id: 'p-16', name: 'Ilham Jaya', gender: 'L', phone: '081398765434', level: 'B+', teamId: null },
+    { id: 'p-17', name: 'Reza Fauzi', gender: 'L', phone: '081223344503', level: 'B+', teamId: null },
+    { id: 'p-18', name: 'Arif Hidayat', gender: 'L', phone: '081223344504', level: 'B+', teamId: null },
+
     // Level B
-    { id: 'p-13', name: 'Marcus Rian Pratama', gender: 'L', phone: '081234567892', level: 'B', teamId: null },
-    { id: 'p-14', name: 'Greysia Dedi Saputra', gender: 'L', phone: '081234567893', level: 'B', teamId: null },
-    { id: 'p-15', name: 'Hendra Gunawan', gender: 'L', phone: '081398765433', level: 'B', teamId: null },
-    { id: 'p-16', name: 'Ilham Jaya', gender: 'L', phone: '081398765434', level: 'B', teamId: null },
-    { id: 'p-17', name: 'Reza Fauzi', gender: 'L', phone: '081223344503', level: 'B', teamId: null },
-    { id: 'p-18', name: 'Arif Hidayat', gender: 'L', phone: '081223344504', level: 'B', teamId: null },
     { id: 'p-19', name: 'Doni Firmansyah', gender: 'L', phone: '085712345003', level: 'B', teamId: null },
     { id: 'p-20', name: 'Agus Wibowo', gender: 'L', phone: '085712345004', level: 'B', teamId: null },
     { id: 'p-21', name: 'Danang Suryo', gender: 'L', phone: '081198760005', level: 'B', teamId: null },

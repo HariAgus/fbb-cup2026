@@ -523,9 +523,10 @@ export const TournamentProvider = ({ children }) => {
 
     // Separate players into pots by level
     const potA = shuffleArray(targetPlayers.filter((p) => (p.level || 'B') === 'A'));
+    const potBPlus = shuffleArray(targetPlayers.filter((p) => (p.level || 'B') === 'B+'));
     const potB = shuffleArray(targetPlayers.filter((p) => (p.level || 'B') === 'B'));
     const potC = shuffleArray(targetPlayers.filter((p) => (p.level || 'B') === 'C'));
-    const otherPot = shuffleArray(targetPlayers.filter((p) => !['A', 'B', 'C'].includes(p.level)));
+    const otherPot = shuffleArray(targetPlayers.filter((p) => !['A', 'B+', 'B', 'C'].includes(p.level)));
 
     const defaultPresets = [
       { name: 'PB Garuda FBB', shortName: 'GDA', color: '#E06020', logo: '🏸' },
@@ -570,19 +571,25 @@ export const TournamentProvider = ({ children }) => {
       resultTeams[teamIdx].playerIds.push(player.id);
     });
 
-    // Step 2: Distribute Pot B round-robin
+    // Step 2: Distribute Pot B+ round-robin
+    potBPlus.forEach((player, idx) => {
+      const teamIdx = idx % numberOfTeams;
+      resultTeams[teamIdx].playerIds.push(player.id);
+    });
+
+    // Step 3: Distribute Pot B round-robin
     potB.forEach((player, idx) => {
       const teamIdx = idx % numberOfTeams;
       resultTeams[teamIdx].playerIds.push(player.id);
     });
 
-    // Step 3: Distribute Pot C round-robin
+    // Step 4: Distribute Pot C round-robin
     potC.forEach((player, idx) => {
       const teamIdx = idx % numberOfTeams;
       resultTeams[teamIdx].playerIds.push(player.id);
     });
 
-    // Step 4: Distribute other players if any
+    // Step 5: Distribute other players if any
     otherPot.forEach((player, idx) => {
       const teamIdx = idx % numberOfTeams;
       resultTeams[teamIdx].playerIds.push(player.id);
@@ -601,6 +608,7 @@ export const TournamentProvider = ({ children }) => {
     return {
       teams: resultTeams,
       potA,
+      potBPlus,
       potB,
       potC,
       totalPlayersDrawn: targetPlayers.length

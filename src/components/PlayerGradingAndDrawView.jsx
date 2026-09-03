@@ -18,7 +18,8 @@ import {
   Flame,
   Check,
   CalendarPlus,
-  Sliders
+  Sliders,
+  Star
 } from 'lucide-react';
 
 export const PlayerGradingAndDrawView = ({ onOpenAddPlayer, onEditPlayer }) => {
@@ -36,13 +37,13 @@ export const PlayerGradingAndDrawView = ({ onOpenAddPlayer, onEditPlayer }) => {
   const [numTeams, setNumTeams] = useState(6);
   const [autoGenMatches, setAutoGenMatches] = useState(true);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [drawStep, setDrawStep] = useState(0); // 0: Idle, 1: Pot A, 2: Pot B, 3: Pot C, 4: Done
+  const [drawStep, setDrawStep] = useState(0); // 0: Idle, 1: Pot A, 2: Pot B+, 3: Pot B, 4: Pot C, 5: Done
   const [drawProgressText, setDrawProgressText] = useState('');
   const [currentDrawnResult, setCurrentDrawnResult] = useState(null);
 
   // Search & Filter for Grading Section
   const [gradingSearch, setGradingSearch] = useState('');
-  const [gradingLevelFilter, setGradingLevelFilter] = useState('all'); // 'all' | 'A' | 'B' | 'C'
+  const [gradingLevelFilter, setGradingLevelFilter] = useState('all'); // 'all' | 'A' | 'B+' | 'B' | 'C'
 
   const players = data.players || [];
   const teams = data.teams || [];
@@ -56,11 +57,13 @@ export const PlayerGradingAndDrawView = ({ onOpenAddPlayer, onEditPlayer }) => {
 
   // Normalize and group players
   const potAPlayers = useMemo(() => players.filter((p) => (p.level || 'B') === 'A'), [players]);
+  const potBPlusPlayers = useMemo(() => players.filter((p) => (p.level || 'B') === 'B+'), [players]);
   const potBPlayers = useMemo(() => players.filter((p) => (p.level || 'B') === 'B'), [players]);
   const potCPlayers = useMemo(() => players.filter((p) => (p.level || 'B') === 'C'), [players]);
 
   const totalPlayers = players.length;
   const pctA = totalPlayers > 0 ? Math.round((potAPlayers.length / totalPlayers) * 100) : 0;
+  const pctBPlus = totalPlayers > 0 ? Math.round((potBPlusPlayers.length / totalPlayers) * 100) : 0;
   const pctB = totalPlayers > 0 ? Math.round((potBPlayers.length / totalPlayers) * 100) : 0;
   const pctC = totalPlayers > 0 ? Math.round((potCPlayers.length / totalPlayers) * 100) : 0;
 
@@ -68,13 +71,16 @@ export const PlayerGradingAndDrawView = ({ onOpenAddPlayer, onEditPlayer }) => {
   const perTeamA = Math.floor(potAPlayers.length / numTeams);
   const remA = potAPlayers.length % numTeams;
 
+  const perTeamBPlus = Math.floor(potBPlusPlayers.length / numTeams);
+  const remBPlus = potBPlusPlayers.length % numTeams;
+
   const perTeamB = Math.floor(potBPlayers.length / numTeams);
   const remB = potBPlayers.length % numTeams;
 
   const perTeamC = Math.floor(potCPlayers.length / numTeams);
   const remC = potCPlayers.length % numTeams;
 
-  const totalPerTeamMin = perTeamA + perTeamB + perTeamC;
+  const totalPerTeamMin = perTeamA + perTeamBPlus + perTeamB + perTeamC;
 
   // Filtered players in grading table
   const filteredGradingPlayers = useMemo(() => {
@@ -87,17 +93,18 @@ export const PlayerGradingAndDrawView = ({ onOpenAddPlayer, onEditPlayer }) => {
     });
   }, [players, gradingSearch, gradingLevelFilter]);
 
-  // Quick auto-grading helper (distribute players into equal thirds A, B, C)
+  // Quick auto-grading helper (distribute players into equal quarters A, B+, B, C)
   const handleAutoGradeDemo = () => {
     if (players.length === 0) return;
-    if (!confirm('Bagi rata otomatis grading seluruh pemain menjadi Level A, B, dan C (masing-masing 1/3)?')) return;
+    if (!confirm('Bagi rata otomatis grading seluruh pemain menjadi Level A, B+, B, dan C (masing-masing 1/4)?')) return;
 
     const updates = {};
-    const oneThird = Math.ceil(players.length / 3);
+    const quarter = Math.ceil(players.length / 4);
 
     players.forEach((p, idx) => {
-      if (idx < oneThird) updates[p.id] = 'A';
-      else if (idx < oneThird * 2) updates[p.id] = 'B';
+      if (idx < quarter) updates[p.id] = 'A';
+      else if (idx < quarter * 2) updates[p.id] = 'B+';
+      else if (idx < quarter * 3) updates[p.id] = 'B';
       else updates[p.id] = 'C';
     });
 
@@ -118,29 +125,35 @@ export const PlayerGradingAndDrawView = ({ onOpenAddPlayer, onEditPlayer }) => {
     // Step 1: Pot A
     setTimeout(() => {
       setDrawStep(2);
-      setDrawProgressText('⚡ Mengocok POT B (Level B - Pemain Menengah)...');
+      setDrawProgressText('⭐ Mengocok POT B+ (Level B+ - Pemain Menengah Atas)...');
 
-      // Step 2: Pot B
+      // Step 2: Pot B+
       setTimeout(() => {
         setDrawStep(3);
-        setDrawProgressText('🛡️ Mengocok POT C (Level C - Pemain Pemula)...');
+        setDrawProgressText('⚡ Mengocok POT B (Level B - Pemain Menengah)...');
 
-        // Step 3: Pot C & Finalize
+        // Step 3: Pot B
         setTimeout(() => {
-          const result = drawBalancedTeams({ numberOfTeams: numTeams });
-          setCurrentDrawnResult(result);
-          setIsDrawing(false);
           setDrawStep(4);
-          setDrawProgressText('🎉 Pengocokan Selesai! Seluruh tim terbagi secara seimbang.');
+          setDrawProgressText('🛡️ Mengocok POT C (Level C - Pemain Pemula)...');
 
-          // Fire celebratory confetti
-          try {
-            confetti({
-              particleCount: 120,
-              spread: 80,
-              origin: { y: 0.6 }
-            });
-          } catch (e) { }
+          // Step 4: Pot C & Finalize
+          setTimeout(() => {
+            const result = drawBalancedTeams({ numberOfTeams: numTeams });
+            setCurrentDrawnResult(result);
+            setIsDrawing(false);
+            setDrawStep(5);
+            setDrawProgressText('🎉 Pengocokan Selesai! Seluruh tim terbagi secara seimbang.');
+
+            // Fire celebratory confetti
+            try {
+              confetti({
+                particleCount: 120,
+                spread: 80,
+                origin: { y: 0.6 }
+              });
+            } catch (e) { }
+          }, 800);
         }, 800);
       }, 800);
     }, 800);
@@ -154,7 +167,7 @@ export const PlayerGradingAndDrawView = ({ onOpenAddPlayer, onEditPlayer }) => {
     }
     const result = drawBalancedTeams({ numberOfTeams: numTeams });
     setCurrentDrawnResult(result);
-    setDrawStep(4);
+    setDrawStep(5);
     showToast(`Pengocokan tim berhasil! ${numTeams} tim telah disusun seimbang.`, 'success');
   };
 
@@ -246,6 +259,28 @@ export const PlayerGradingAndDrawView = ({ onOpenAddPlayer, onEditPlayer }) => {
             </div>
             <div className="metric-title">Level A (Unggulan)</div>
             <div className="metric-desc">Pemain Inti / Unggulan</div>
+          </div>
+        </div>
+
+        {/* Pot B+ Metric Card */}
+        <div
+          className="metric-deck-card theme-purple cursor-pointer"
+          onClick={() => {
+            setActiveSection('grading');
+            setGradingLevelFilter('B+');
+          }}
+          title="Klik untuk filter pemain Level B+"
+        >
+          <div className="metric-icon-box">
+            <Star size={24} />
+          </div>
+          <div className="metric-content">
+            <div className="metric-num-row">
+              <span className="metric-number">{potBPlusPlayers.length}</span>
+              <span className="metric-tag">POT B+ ({pctBPlus}%)</span>
+            </div>
+            <div className="metric-title">Level B+ (Menengah Atas)</div>
+            <div className="metric-desc">Pemain Tangguh / Handal</div>
           </div>
         </div>
 
@@ -350,6 +385,10 @@ export const PlayerGradingAndDrawView = ({ onOpenAddPlayer, onEditPlayer }) => {
                     👑 {perTeamA}x Level A {remA > 0 ? `(+${remA} sisa)` : ''}
                   </span>
                   <span className="text-muted font-bold">+</span>
+                  <span className="badge-level badge-level-b-plus">
+                    ⭐ {perTeamBPlus}x Level B+ {remBPlus > 0 ? `(+${remBPlus} sisa)` : ''}
+                  </span>
+                  <span className="text-muted font-bold">+</span>
                   <span className="badge-level badge-level-b">
                     ⚡ {perTeamB}x Level B {remB > 0 ? `(+${remB} sisa)` : ''}
                   </span>
@@ -396,16 +435,20 @@ export const PlayerGradingAndDrawView = ({ onOpenAddPlayer, onEditPlayer }) => {
                 <p className="text-sm text-gray-600 mt-1">{drawProgressText}</p>
               </div>
 
-              <div className="flex items-center justify-center gap-3 max-w-md mx-auto pt-4">
+              <div className="flex items-center justify-center gap-3 max-w-lg mx-auto pt-4 flex-wrap">
                 <div className={`pot-ball-chip pot-a ${drawStep >= 1 ? 'active' : ''}`}>
                   👑 POT A
                 </div>
                 <ArrowRight size={16} className="text-gray-400" />
-                <div className={`pot-ball-chip pot-b ${drawStep >= 2 ? 'active' : ''}`}>
+                <div className={`pot-ball-chip pot-b-plus ${drawStep >= 2 ? 'active' : ''}`}>
+                  ⭐ POT B+
+                </div>
+                <ArrowRight size={16} className="text-gray-400" />
+                <div className={`pot-ball-chip pot-b ${drawStep >= 3 ? 'active' : ''}`}>
                   ⚡ POT B
                 </div>
                 <ArrowRight size={16} className="text-gray-400" />
-                <div className={`pot-ball-chip pot-c ${drawStep >= 3 ? 'active' : ''}`}>
+                <div className={`pot-ball-chip pot-c ${drawStep >= 4 ? 'active' : ''}`}>
                   🛡️ POT C
                 </div>
               </div>
@@ -422,7 +465,7 @@ export const PlayerGradingAndDrawView = ({ onOpenAddPlayer, onEditPlayer }) => {
                     <span>Hasil Pengocokan {currentDrawnResult.teams.length} Tim Seimbang</span>
                   </h3>
                   <p className="draw-result-header-desc">
-                    Total <b>{currentDrawnResult.totalPlayersDrawn} pemain</b> telah didistribusikan secara proporsional berdasarkan Level A, B, dan C.
+                    Total <b>{currentDrawnResult.totalPlayersDrawn} pemain</b> telah didistribusikan secara proporsional berdasarkan Level A, B+, B, dan C.
                   </p>
                 </div>
 
@@ -455,6 +498,7 @@ export const PlayerGradingAndDrawView = ({ onOpenAddPlayer, onEditPlayer }) => {
                     .filter(Boolean);
 
                   const countA = teamPlayers.filter((p) => (p.level || 'B') === 'A').length;
+                  const countBPlus = teamPlayers.filter((p) => (p.level || 'B') === 'B+').length;
                   const countB = teamPlayers.filter((p) => (p.level || 'B') === 'B').length;
                   const countC = teamPlayers.filter((p) => (p.level || 'B') === 'C').length;
 
@@ -494,6 +538,7 @@ export const PlayerGradingAndDrawView = ({ onOpenAddPlayer, onEditPlayer }) => {
                         <span className="text-gray-500">Komposisi:</span>
                         <div className="flex items-center gap-1">
                           <span className="badge-level badge-level-a text-2xs py-0 px-1.5">👑 {countA}A</span>
+                          <span className="badge-level badge-level-b-plus text-2xs py-0 px-1.5">⭐ {countBPlus}B+</span>
                           <span className="badge-level badge-level-b text-2xs py-0 px-1.5">⚡ {countB}B</span>
                           <span className="badge-level badge-level-c text-2xs py-0 px-1.5">🛡️ {countC}C</span>
                         </div>
@@ -520,7 +565,7 @@ export const PlayerGradingAndDrawView = ({ onOpenAddPlayer, onEditPlayer }) => {
                               </div>
 
                               <div className="flex items-center gap-1 flex-shrink-0">
-                                <span className={`badge-level badge-level-${lvl.toLowerCase()} text-2xs py-0 px-1.5 font-bold`}>
+                                <span className={`badge-level badge-level-${lvl.toLowerCase().replace('+', '-plus')} text-2xs py-0 px-1.5 font-bold`}>
                                   {lvl}
                                 </span>
                                 {isCaptain && (
@@ -574,6 +619,12 @@ export const PlayerGradingAndDrawView = ({ onOpenAddPlayer, onEditPlayer }) => {
                 👑 Level A ({potAPlayers.length})
               </button>
               <button
+                onClick={() => setGradingLevelFilter('B+')}
+                className={`status-filter-btn ${gradingLevelFilter === 'B+' ? 'active' : ''}`}
+              >
+                ⭐ Level B+ ({potBPlusPlayers.length})
+              </button>
+              <button
                 onClick={() => setGradingLevelFilter('B')}
                 className={`status-filter-btn ${gradingLevelFilter === 'B' ? 'active' : ''}`}
               >
@@ -592,10 +643,10 @@ export const PlayerGradingAndDrawView = ({ onOpenAddPlayer, onEditPlayer }) => {
                 <button
                   onClick={handleAutoGradeDemo}
                   className="btn btn-sm btn-secondary font-bold"
-                  title="Bagi rata grading pemain 1/3 A, 1/3 B, 1/3 C"
+                  title="Bagi rata grading pemain 1/4 A, 1/4 B+, 1/4 B, 1/4 C"
                 >
                   <RefreshCw size={13} />
-                  <span>Auto-Grade 1/3</span>
+                  <span>Auto-Grade 1/4</span>
                 </button>
                 <button
                   onClick={onOpenAddPlayer}
@@ -687,6 +738,13 @@ export const PlayerGradingAndDrawView = ({ onOpenAddPlayer, onEditPlayer }) => {
                                 title="Set sebagai Level A (Unggulan)"
                               >
                                 <Crown size={11} /> Level A
+                              </button>
+                              <button
+                                onClick={() => updatePlayerLevel(player.id, 'B+')}
+                                className={`grading-segment-btn ${currentLevel === 'B+' ? 'active-b-plus' : ''}`}
+                                title="Set sebagai Level B+ (Menengah Atas)"
+                              >
+                                <Star size={11} /> Level B+
                               </button>
                               <button
                                 onClick={() => updatePlayerLevel(player.id, 'B')}

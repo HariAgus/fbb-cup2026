@@ -224,6 +224,9 @@ export const TeamsView = ({ onOpenAddTeam, onEditTeam, onViewRoster }) => {
                           <span className="badge-level badge-level-a text-2xs py-0 px-1">
                             {teamPlayers.filter((p) => (p.level || 'B') === 'A').length}A
                           </span>
+                          <span className="badge-level badge-level-b-plus text-2xs py-0 px-1">
+                            {teamPlayers.filter((p) => (p.level || 'B') === 'B+').length}B+
+                          </span>
                           <span className="badge-level badge-level-b text-2xs py-0 px-1">
                             {teamPlayers.filter((p) => (p.level || 'B') === 'B').length}B
                           </span>
@@ -277,7 +280,7 @@ export const TeamsView = ({ onOpenAddTeam, onEditTeam, onViewRoster }) => {
                               </div>
 
                               <div className="flex items-center gap-1.5 flex-shrink-0">
-                                <span className={`badge-level badge-level-${lvl.toLowerCase()} text-2xs py-0 px-1 font-extrabold`}>
+                                <span className={`badge-level badge-level-${lvl.toLowerCase().replace('+', '-plus')} text-2xs py-0 px-1 font-extrabold`}>
                                   {lvl}
                                 </span>
                                 {isCaptain && (
