@@ -235,11 +235,11 @@ export const MatchesView = ({ onOpenScoreModal, onOpenAddMatch }) => {
                   <div className="match-venue-info">
                     <div className="flex items-center gap-1.5 text-xs text-muted">
                       <Clock size={13} className="text-primary" />
-                      <span>{m.date || 'TBD'} • {m.time || 'WIB'}</span>
+                      <span>{m.date || 'TBD'} • {m.time || '-'}</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-xs text-muted mt-0.5">
                       <MapPin size={13} className="text-primary" />
-                      <span>{m.pitch || 'Court 1 Badminton'}</span>
+                      <span>{m.pitch || 'Lapangan 1'}</span>
                     </div>
                   </div>
 

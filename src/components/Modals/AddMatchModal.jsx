@@ -14,7 +14,7 @@ export const AddMatchModal = ({ isOpen, onClose }) => {
 
   const [round, setRound] = useState('Matchday 1');
   const [date, setDate] = useState('2026-09-17');
-  const [time, setTime] = useState('14:00 WIB');
+  const [time, setTime] = useState('');
   const [pitch, setPitch] = useState('Court 1 Badminton');
 
   if (!isOpen) return null;
@@ -247,7 +247,7 @@ export const AddMatchModal = ({ isOpen, onClose }) => {
                 <label className="form-label text-xs font-bold text-gray-800">Waktu</label>
                 <input
                   type="text"
-                  placeholder="14:00 WIB"
+                  placeholder="Contoh: 14:00 WIB (kosongkan jika belum)"
                   value={time}
                   onChange={(e) => setTime(e.target.value)}
                   className="form-control text-sm"

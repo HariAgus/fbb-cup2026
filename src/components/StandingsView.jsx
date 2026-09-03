@@ -49,7 +49,7 @@ export const StandingsView = ({ setActiveTab }) => {
             Klasemen Resmi Turnamen FBB Cup 2026
           </h2>
           <p className="view-subtitle">
-            Peringkat tim berdasarkan Poin (PTS), Selisih Gol (GD), dan Produktivitas Gol (GF).
+            Peringkat tim berdasarkan Poin (PTS), Selisih Game (GD), Selisih Poin (PD), dan Total Skor yang didapat.
           </p>
         </div>
 
@@ -73,7 +73,7 @@ export const StandingsView = ({ setActiveTab }) => {
             <span className="qualify-bar" /> 4 Tim Teratas Lolos ke Babak Playoff / Semifinal
           </span>
           <span className="rules-points-badge">
-            🏆 Menang: <b>3 Poin</b> | 🤝 Seri: <b>1 Poin</b> | ❌ Kalah: <b>0 Poin</b>
+            🏆 Menang: <b>3 Poin</b> | ❌ Kalah: <b>0 Poin</b> | Tie-breaker: <b>PTS ➔ GD ➔ PD ➔ Total Skor</b>
           </span>
         </div>
         <div className="rules-legend-right">
@@ -99,29 +99,34 @@ export const StandingsView = ({ setActiveTab }) => {
               <tr>
                 <th className="th-pos">POS</th>
                 <th className="th-team">TIM & PESERTA</th>
-                <th className="th-num" title="Matches Played (Main)">MP</th>
-                <th className="th-num" title="Won (Menang)">W</th>
-                <th className="th-num" title="Drawn (Seri)">D</th>
-                <th className="th-num" title="Lost (Kalah)">L</th>
-                <th className="th-num" title="Goals For (Gol Masuk)">GF</th>
-                <th className="th-num" title="Goals Against (Kebobolan)">GA</th>
-                <th className="th-num" title="Goal Difference (Selisih Gol)">GD</th>
-                <th className="th-pts" title="Points (Poin)">PTS</th>
+                <th className="th-num" title="Matches Played (Jumlah Laga)">MP</th>
+                <th className="th-num" title="Won (Menang Laga)">W</th>
+                <th className="th-num" title="Lost (Kalah Laga)">L</th>
+                <th className="th-num" title="Games Won - Lost (Game/Set Menang - Kalah)">SET</th>
+                <th className="th-num" title="Games Difference (Selisih Game/Set)">GD</th>
+                <th className="th-num text-emerald-700" title="Points Won (Total Skor Poin Masuk)">SKOR +</th>
+                <th className="th-num text-rose-700" title="Points Conceded (Total Skor Poin Lawan)">SKOR -</th>
+                <th className="th-num" title="Points Difference (Selisih Skor Poin)">PD</th>
+                <th className="th-pts" title="Points (Poin Utama Klasemen)">PTS</th>
                 <th className="th-form">FORM</th>
               </tr>
             </thead>
             <tbody>
               {filteredStandings.length === 0 ? (
                 <tr>
-                  <td colSpan={11} className="empty-table-msg">
+                  <td colSpan={12} className="empty-table-msg">
                     Belum ada data tim yang terdaftar.
                   </td>
                 </tr>
               ) : (
                 filteredStandings.map((item) => {
-                  const gdValue = item.gd;
+                  const gdValue = item.gd || 0;
                   const gdClass =
                     gdValue > 0 ? 'gd-positive' : gdValue < 0 ? 'gd-negative' : 'gd-neutral';
+
+                  const pdValue = item.pd || 0;
+                  const pdClass =
+                    pdValue > 0 ? 'gd-positive' : pdValue < 0 ? 'gd-negative' : 'gd-neutral';
 
                   return (
                     <tr
@@ -148,7 +153,7 @@ export const StandingsView = ({ setActiveTab }) => {
                               borderColor: item.team.color || '#E06020'
                             }}
                           >
-                            <span>{item.team.logo || '⚽'}</span>
+                            <span>{item.team.logo || '🏸'}</span>
                           </div>
                           <div className="team-name-wrap">
                             <span className="team-full-name">{item.team.name}</span>
@@ -163,13 +168,24 @@ export const StandingsView = ({ setActiveTab }) => {
                       {/* Stats */}
                       <td className="td-num font-semibold">{item.mp}</td>
                       <td className="td-num text-emerald-600 font-bold">{item.w}</td>
-                      <td className="td-num text-amber-600 font-bold">{item.d}</td>
                       <td className="td-num text-rose-600 font-bold">{item.l}</td>
-                      <td className="td-num font-semibold">{item.gf}</td>
-                      <td className="td-num text-muted">{item.ga}</td>
+                      <td className="td-num font-mono text-xs text-gray-700">
+                        {item.gw ?? 0}-{item.gl ?? 0}
+                      </td>
                       <td className="td-num">
                         <span className={`gd-pill ${gdClass}`}>
                           {gdValue > 0 ? `+${gdValue}` : gdValue}
+                        </span>
+                      </td>
+                      <td className="td-num font-bold text-emerald-600 font-mono">
+                        {item.pointWon || 0}
+                      </td>
+                      <td className="td-num font-mono text-xs text-muted">
+                        {item.pointLost || 0}
+                      </td>
+                      <td className="td-num">
+                        <span className={`gd-pill ${pdClass}`}>
+                          {pdValue > 0 ? `+${pdValue}` : pdValue}
                         </span>
                       </td>
 

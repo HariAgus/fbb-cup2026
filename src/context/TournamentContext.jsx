@@ -164,6 +164,33 @@ export const TournamentProvider = ({ children }) => {
     }
   };
 
+  // ---------------- BADMINTON DETAIL SCORES PARSER ----------------
+  const parseDetailScores = (detailScores) => {
+    if (!detailScores || typeof detailScores !== 'string') {
+      return { t1Total: 0, t2Total: 0, sets: [] };
+    }
+
+    let t1Total = 0;
+    let t2Total = 0;
+    const sets = [];
+
+    const setMatches = detailScores.match(/\b(\d+)\s*[-:]\s*(\d+)\b/g);
+    if (setMatches) {
+      setMatches.forEach((setStr) => {
+        const parts = setStr.split(/[-:]/);
+        if (parts.length === 2) {
+          const s1 = parseInt(parts[0].trim(), 10) || 0;
+          const s2 = parseInt(parts[1].trim(), 10) || 0;
+          t1Total += s1;
+          t2Total += s2;
+          sets.push({ t1: s1, t2: s2 });
+        }
+      });
+    }
+
+    return { t1Total, t2Total, sets };
+  };
+
   // ---------------- BADMINTON STANDINGS CALCULATION ----------------
   const calculateStandings = useMemo(() => {
     const teams = data.teams || [];
@@ -173,14 +200,20 @@ export const TournamentProvider = ({ children }) => {
       statsMap[team.id] = {
         teamId: team.id,
         team,
-        mp: 0, // Matches Played
-        w: 0,  // Match Won
-        l: 0,  // Match Lost
-        gw: 0, // Games/Sets Won
-        gl: 0, // Games/Sets Lost
-        gd: 0, // Games Difference
-        pts: 0,// Points
-        form: [] // Last matches ['W', 'L']
+        mp: 0,       // Matches Played
+        w: 0,        // Match Won
+        d: 0,        // Drawn (if any)
+        l: 0,        // Match Lost
+        gw: 0,       // Games/Sets Won
+        gl: 0,       // Games/Sets Lost
+        gd: 0,       // Games Difference
+        pointWon: 0, // Total Skor Poin yang Didapat (Points For)
+        pointLost: 0,// Total Skor Poin Kebobolan (Points Against)
+        pd: 0,       // Selisih Poin (Point Difference)
+        gf: 0,       // Compatibility alias for pointWon
+        ga: 0,       // Compatibility alias for pointLost
+        pts: 0,      // Main Points (3 pts per win)
+        form: []     // Last matches ['W', 'L']
       };
     });
 
@@ -203,31 +236,67 @@ export const TournamentProvider = ({ children }) => {
         t2.gw += s2;
         t2.gl += s1;
 
+        // Calculate points: prioritize manual total points if set, otherwise parse detailScores
+        let pts1 = 0;
+        let pts2 = 0;
+
+        if (m.team1TotalPoints !== undefined && m.team1TotalPoints !== null && m.team1TotalPoints !== '') {
+          pts1 = Number(m.team1TotalPoints) || 0;
+          pts2 = Number(m.team2TotalPoints) || 0;
+        } else {
+          const { t1Total, t2Total } = parseDetailScores(m.detailScores);
+          pts1 = t1Total;
+          pts2 = t2Total;
+        }
+
+        t1.pointWon += pts1;
+        t1.pointLost += pts2;
+        t2.pointWon += pts2;
+        t2.pointLost += pts1;
+
         if (s1 > s2) {
           t1.w += 1;
           t1.pts += 3;
           t1.form.push('W');
           t2.l += 1;
           t2.form.push('L');
-        } else {
+        } else if (s2 > s1) {
           t1.l += 1;
           t1.form.push('L');
           t2.w += 1;
           t2.pts += 3;
           t2.form.push('W');
+        } else {
+          t1.d += 1;
+          t1.pts += 1;
+          t1.form.push('D');
+          t2.d += 1;
+          t2.pts += 1;
+          t2.form.push('D');
         }
       }
     });
 
     Object.values(statsMap).forEach((st) => {
       st.gd = st.gw - st.gl;
+      st.pd = st.pointWon - st.pointLost;
+      st.gf = st.pointWon;
+      st.ga = st.pointLost;
     });
 
-    // Sorting: Points (DESC) -> Games Diff (DESC) -> Games Won (DESC) -> Name (ASC)
+    // Ranking hierarchy:
+    // 1. Points (pts) DESC
+    // 2. Games Difference (gd) DESC
+    // 3. Games Won (gw) DESC
+    // 4. Point Difference / Selisih Poin (pd) DESC
+    // 5. Total Skor yang Didapat / Points Scored (pointWon) DESC
+    // 6. Name (ASC)
     const sorted = Object.values(statsMap).sort((a, b) => {
       if (b.pts !== a.pts) return b.pts - a.pts;
       if (b.gd !== a.gd) return b.gd - a.gd;
       if (b.gw !== a.gw) return b.gw - a.gw;
+      if (b.pd !== a.pd) return b.pd - a.pd;
+      if (b.pointWon !== a.pointWon) return b.pointWon - a.pointWon;
       return a.team.name.localeCompare(b.team.name);
     });
 
@@ -692,7 +761,7 @@ export const TournamentProvider = ({ children }) => {
           detailScores: '',
           status: 'scheduled',
           date: `2026-09-${15 + (matchday - 1)}`,
-          time: `${String(8 + (matchCount % 6) * 1.5).padStart(2, '0')}:30 WIB`,
+          time: '',
           pitch: `Court ${(matchCount % 3) + 1} Badminton`
         });
         matchCount++;
@@ -706,7 +775,20 @@ export const TournamentProvider = ({ children }) => {
     showToast(`Berhasil membuat ${newMatches.length} jadwal pertandingan turnamen badminton!`);
   };
 
-  const updateMatchScore = (matchId, t1Score, t2Score, detailScores = '', status = 'finished', team1PlayerIds = null, team2PlayerIds = null) => {
+  const updateMatchScore = (
+    matchId,
+    t1Score,
+    t2Score,
+    detailScores = '',
+    status = 'finished',
+    team1PlayerIds = null,
+    team2PlayerIds = null,
+    pitch = null,
+    time = null,
+    date = null,
+    team1TotalPoints = null,
+    team2TotalPoints = null
+  ) => {
     setData((prev) => ({
       ...prev,
       matches: prev.matches.map((m) => {
@@ -718,13 +800,18 @@ export const TournamentProvider = ({ children }) => {
             detailScores: detailScores !== undefined ? detailScores : m.detailScores,
             status: status || m.status,
             team1PlayerIds: team1PlayerIds !== null ? team1PlayerIds : m.team1PlayerIds,
-            team2PlayerIds: team2PlayerIds !== null ? team2PlayerIds : m.team2PlayerIds
+            team2PlayerIds: team2PlayerIds !== null ? team2PlayerIds : m.team2PlayerIds,
+            pitch: pitch !== null ? pitch : m.pitch,
+            time: time !== null ? time : (m.time || ''),
+            date: date !== null ? date : m.date,
+            team1TotalPoints: team1TotalPoints !== null && team1TotalPoints !== '' ? Number(team1TotalPoints) : (team1TotalPoints === '' ? null : m.team1TotalPoints),
+            team2TotalPoints: team2TotalPoints !== null && team2TotalPoints !== '' ? Number(team2TotalPoints) : (team2TotalPoints === '' ? null : m.team2TotalPoints)
           };
         }
         return m;
       })
     }));
-    showToast('Skor dan pemain pertandingan berhasil diperbarui!');
+    showToast('Data pertandingan dan skor berhasil diperbarui!');
   };
 
   const addCustomMatch = (matchObj) => {
@@ -961,6 +1048,7 @@ export const TournamentProvider = ({ children }) => {
     notification,
     showToast,
     standings: calculateStandings,
+    parseDetailScores,
     // Player methods & Grading
     addPlayer,
     updatePlayer,
