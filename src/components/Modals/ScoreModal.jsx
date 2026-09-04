@@ -665,7 +665,7 @@ export const ScoreModal = ({ isOpen, onClose, match = null }) => {
                     >
                       <option value="">-- Pilih Pemain 1 --</option>
                       {team1Players.map((p) => (
-                        <option key={p.id} value={p.id}>{p.name}</option>
+                        <option key={p.id} value={p.id}>{p.name} - {p.level}</option>
                       ))}
                     </select>
                   </div>
@@ -679,7 +679,7 @@ export const ScoreModal = ({ isOpen, onClose, match = null }) => {
                     >
                       <option value="">-- Tidak ada (Tunggal) / Pilih --</option>
                       {team1Players.filter((p) => p.id !== t1Player1).map((p) => (
-                        <option key={p.id} value={p.id}>{p.name}</option>
+                        <option key={p.id} value={p.id}>{p.name} - {p.level}</option>
                       ))}
                     </select>
                   </div>
@@ -701,7 +701,7 @@ export const ScoreModal = ({ isOpen, onClose, match = null }) => {
                     >
                       <option value="">-- Pilih Pemain 1 --</option>
                       {team2Players.map((p) => (
-                        <option key={p.id} value={p.id}>{p.name}</option>
+                        <option key={p.id} value={p.id}>{p.name} - {p.level}</option>
                       ))}
                     </select>
                   </div>
@@ -715,7 +715,7 @@ export const ScoreModal = ({ isOpen, onClose, match = null }) => {
                     >
                       <option value="">-- Tidak ada (Tunggal) / Pilih --</option>
                       {team2Players.filter((p) => p.id !== t2Player1).map((p) => (
-                        <option key={p.id} value={p.id}>{p.name}</option>
+                        <option key={p.id} value={p.id}>{p.name} - {p.level}</option>
                       ))}
                     </select>
                   </div>

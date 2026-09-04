@@ -140,7 +140,7 @@ export const AddMatchModal = ({ isOpen, onClose }) => {
                         <option value="">-- Pilih Pemain 1 --</option>
                         {team1Players.map((p) => (
                           <option key={p.id} value={p.id}>
-                            {p.name}
+                            {p.name} - {p.class_level}
                           </option>
                         ))}
                       </select>
@@ -158,7 +158,7 @@ export const AddMatchModal = ({ isOpen, onClose }) => {
                           .filter((p) => p.id !== t1Player1)
                           .map((p) => (
                             <option key={p.id} value={p.id}>
-                              {p.name}
+                              {p.name} - {p.class_level}
                             </option>
                           ))}
                       </select>
