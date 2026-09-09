@@ -739,6 +739,139 @@ export const TournamentProvider = ({ children }) => {
     showToast('Pemain dikeluarkan dari tim.');
   };
 
+  const updateTeamFormationSlots = (teamId, formationSlots, formationRounds = null) => {
+    setData((prev) => ({
+      ...prev,
+      teams: (prev.teams || []).map((t) => {
+        if (t.id === teamId) {
+          return {
+            ...t,
+            formationSlots: formationSlots || t.formationSlots,
+            formationRounds: formationRounds || t.formationRounds
+          };
+        }
+        return t;
+      })
+    }));
+    showToast('Konfigurasi 6 Kartu Formasi tim berhasil disimpan!');
+  };
+
+  // ---------------- FORMATION 6 CARDS GENERATOR ----------------
+  // Menghasilkan 6 kartu formasi saling berbeda untuk 5 babak penyisihan + 1 babak semifinal
+  // Berdasarkan aturan grading: P1 & P2: Grade A; P3, P4, P5: Grade B/B+; P6: Grade C
+  // Partai 1: Grade AB | Partai 2: Grade AC | Partai 3: Grade B+B
+  const getFormationCardsForTeam = (team, allPlayers = []) => {
+    if (!team) return { slots: {}, cards: [], isComplete: false, allUnique: false, teamPlayers: [] };
+
+    const teamPlayers = (team.playerIds || [])
+      .map((id) => allPlayers.find((p) => p.id === id))
+      .filter(Boolean);
+
+    const savedSlots = team.formationSlots || {};
+
+    const gradeAPlayers = teamPlayers.filter((p) => (p.level || 'B') === 'A');
+    const gradeBPlayers = teamPlayers.filter((p) => (p.level || 'B') === 'B+' || (p.level || 'B') === 'B');
+    const gradeCPlayers = teamPlayers.filter((p) => (p.level || 'B') === 'C');
+
+    const usedIds = new Set();
+
+    const getPlayer = (slotKey, preferredPool) => {
+      if (savedSlots[slotKey]) {
+        const found = teamPlayers.find((p) => p.id === savedSlots[slotKey]);
+        if (found) {
+          usedIds.add(found.id);
+          return found;
+        }
+      }
+      const candidate =
+        preferredPool.find((p) => !usedIds.has(p.id)) ||
+        teamPlayers.find((p) => !usedIds.has(p.id)) ||
+        null;
+      if (candidate) usedIds.add(candidate.id);
+      return candidate;
+    };
+
+    const p1 = getPlayer('p1', gradeAPlayers);
+    const p2 = getPlayer('p2', gradeAPlayers);
+    const p3 = getPlayer('p3', gradeBPlayers);
+    const p4 = getPlayer('p4', gradeBPlayers);
+    const p5 = getPlayer('p5', gradeBPlayers);
+    const p6 = getPlayer('p6', gradeCPlayers);
+
+    const roundLabels = team.formationRounds || {
+      kartu1: 'Babak Penyisihan 1',
+      kartu2: 'Babak Penyisihan 2',
+      kartu3: 'Babak Penyisihan 3',
+      kartu4: 'Babak Penyisihan 4',
+      kartu5: 'Babak Penyisihan 5',
+      kartu6: 'Babak Semifinal'
+    };
+
+    const cards = [
+      {
+        cardIndex: 1,
+        cardTitle: 'Kartu 1',
+        defaultRound: roundLabels.kartu1 || 'Babak Penyisihan 1',
+        partai1: { label: 'Partai 1 (Grade AB)', requiredGrade: 'AB', player1: p1, player2: p3 },
+        partai2: { label: 'Partai 2 (Grade AC)', requiredGrade: 'AC', player1: p2, player2: p6 },
+        partai3: { label: 'Partai 3 (Grade B+B)', requiredGrade: 'B+B', player1: p4, player2: p5 }
+      },
+      {
+        cardIndex: 2,
+        cardTitle: 'Kartu 2',
+        defaultRound: roundLabels.kartu2 || 'Babak Penyisihan 2',
+        partai1: { label: 'Partai 1 (Grade AB)', requiredGrade: 'AB', player1: p1, player2: p4 },
+        partai2: { label: 'Partai 2 (Grade AC)', requiredGrade: 'AC', player1: p2, player2: p6 },
+        partai3: { label: 'Partai 3 (Grade B+B)', requiredGrade: 'B+B', player1: p3, player2: p5 }
+      },
+      {
+        cardIndex: 3,
+        cardTitle: 'Kartu 3',
+        defaultRound: roundLabels.kartu3 || 'Babak Penyisihan 3',
+        partai1: { label: 'Partai 1 (Grade AB)', requiredGrade: 'AB', player1: p2, player2: p3 },
+        partai2: { label: 'Partai 2 (Grade AC)', requiredGrade: 'AC', player1: p1, player2: p6 },
+        partai3: { label: 'Partai 3 (Grade B+B)', requiredGrade: 'B+B', player1: p4, player2: p5 }
+      },
+      {
+        cardIndex: 4,
+        cardTitle: 'Kartu 4',
+        defaultRound: roundLabels.kartu4 || 'Babak Penyisihan 4',
+        partai1: { label: 'Partai 1 (Grade AB)', requiredGrade: 'AB', player1: p2, player2: p4 },
+        partai2: { label: 'Partai 2 (Grade AC)', requiredGrade: 'AC', player1: p1, player2: p6 },
+        partai3: { label: 'Partai 3 (Grade B+B)', requiredGrade: 'B+B', player1: p3, player2: p5 }
+      },
+      {
+        cardIndex: 5,
+        cardTitle: 'Kartu 5',
+        defaultRound: roundLabels.kartu5 || 'Babak Penyisihan 5',
+        partai1: { label: 'Partai 1 (Grade AB)', requiredGrade: 'AB', player1: p1, player2: p5 },
+        partai2: { label: 'Partai 2 (Grade AC)', requiredGrade: 'AC', player1: p2, player2: p6 },
+        partai3: { label: 'Partai 3 (Grade B+B)', requiredGrade: 'B+B', player1: p3, player2: p4 }
+      },
+      {
+        cardIndex: 6,
+        cardTitle: 'Kartu 6',
+        defaultRound: roundLabels.kartu6 || 'Babak Semifinal',
+        partai1: { label: 'Partai 1 (Grade AB)', requiredGrade: 'AB', player1: p2, player2: p5 },
+        partai2: { label: 'Partai 2 (Grade AC)', requiredGrade: 'AC', player1: p1, player2: p6 },
+        partai3: { label: 'Partai 3 (Grade B+B)', requiredGrade: 'B+B', player1: p3, player2: p4 }
+      }
+    ];
+
+    const assignedList = [p1, p2, p3, p4, p5, p6].filter(Boolean);
+    const isComplete = assignedList.length === 6;
+    const allUnique = new Set(assignedList.map((p) => p.id)).size === 6;
+
+    return {
+      slots: { p1, p2, p3, p4, p5, p6 },
+      cards,
+      roundLabels,
+      isComplete,
+      allUnique,
+      teamPlayers
+    };
+  };
+
   // ---------------- MATCH ACTIONS ----------------
   const generateAllMatches = () => {
     const teams = data.teams || [];
@@ -1082,6 +1215,9 @@ export const TournamentProvider = ({ children }) => {
     addDoorprizeDraw,
     deleteDoorprizeDraw,
     resetDoorprizeHistory,
+    // Formation Cards methods
+    updateTeamFormationSlots,
+    getFormationCardsForTeam: (team) => getFormationCardsForTeam(team, data.players || []),
     // Authentication methods & state (Pure Firebase Auth)
     currentUser,
     authLoading,

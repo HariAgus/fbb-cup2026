@@ -11,6 +11,7 @@ import { KnockoutView } from '../components/KnockoutView';
 import { CloudSyncView } from '../components/CloudSyncView';
 import { PlayerGradingAndDrawView } from '../components/PlayerGradingAndDrawView';
 import { AdminDoorprizeView } from '../components/AdminDoorprizeView';
+import { FormationsView } from '../components/FormationsView';
 import { PlayerModal } from '../components/Modals/PlayerModal';
 import { TeamModal } from '../components/Modals/TeamModal';
 import { ScoreModal } from '../components/Modals/ScoreModal';
@@ -35,7 +36,8 @@ import {
   LogOut,
   UserCheck,
   Menu,
-  Gift
+  Gift,
+  Layers
 } from 'lucide-react';
 
 export const AdminPortal = () => {
@@ -70,6 +72,8 @@ export const AdminPortal = () => {
   const [isRosterModalOpen, setIsRosterModalOpen] = useState(false);
   const [selectedRosterTeam, setSelectedRosterTeam] = useState(null);
 
+  const [formationSelectedTeamId, setFormationSelectedTeamId] = useState(null);
+
   const totalPlayers = (data.players || []).length;
   const totalTeams = (data.teams || []).length;
   const totalMatches = (data.matches || []).length;
@@ -77,6 +81,7 @@ export const AdminPortal = () => {
 
   const adminNavItems = [
     { id: 'draw', label: 'Undian Pot', icon: Shuffle },
+    { id: 'formations', label: 'Kartu Formasi', icon: Layers },
     { id: 'doorprize', label: 'Doorprize', icon: Gift },
     { id: 'players', label: 'Pemain', icon: Activity },
     { id: 'teams', label: 'Tim Skuad', icon: Users },
@@ -87,6 +92,11 @@ export const AdminPortal = () => {
   ];
 
   // Handler helpers
+  const handleOpenTeamFormation = (team) => {
+    setFormationSelectedTeamId(team?.id || null);
+    setActiveTab('formations');
+  };
+
   const handleOpenAddPlayer = () => {
     setEditingPlayer(null);
     setIsPlayerModalOpen(true);
@@ -289,6 +299,13 @@ export const AdminPortal = () => {
               <Shuffle size={14} /> <span>Kocok Tim (Pot Draw)</span>
             </button>
             <button
+              onClick={() => setActiveTab('formations')}
+              className={`btn btn-sm ${activeTab === 'formations' ? 'btn-primary' : 'btn-outline-primary'}`}
+              title="Kelola & Cetak 6 Kartu Formasi Tim"
+            >
+              <Layers size={14} /> <span>Kartu Formasi</span>
+            </button>
+            <button
               onClick={() => setActiveTab('doorprize')}
               className={`btn btn-sm ${activeTab === 'doorprize' ? 'btn-primary' : 'btn-outline-primary'}`}
               title="Buka Fitur Undian & Spin Doorprize"
@@ -321,6 +338,13 @@ export const AdminPortal = () => {
             />
           )}
 
+          {activeTab === 'formations' && (
+            <FormationsView
+              initialTeamId={formationSelectedTeamId}
+              onSelectTeam={(teamId) => setFormationSelectedTeamId(teamId)}
+            />
+          )}
+
           {activeTab === 'doorprize' && (
             <AdminDoorprizeView />
           )}
@@ -337,6 +361,7 @@ export const AdminPortal = () => {
               onOpenAddTeam={handleOpenAddTeam}
               onEditTeam={handleEditTeam}
               onViewRoster={handleViewRoster}
+              onOpenFormation={handleOpenTeamFormation}
             />
           )}
 
