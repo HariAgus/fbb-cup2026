@@ -11,10 +11,11 @@ import {
   ListOrdered,
   CalendarPlus,
   Crown,
-  Shield
+  Shield,
+  Layers
 } from 'lucide-react';
 
-export const TeamsView = ({ onOpenAddTeam, onEditTeam, onViewRoster }) => {
+export const TeamsView = ({ onOpenAddTeam, onEditTeam, onViewRoster, onOpenFormation }) => {
   const { data, isAdmin, deleteTeam, generateAllMatches } = useTournament();
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -297,12 +298,22 @@ export const TeamsView = ({ onOpenAddTeam, onEditTeam, onViewRoster }) => {
                   </div>
 
                   {/* Team Card Footer Button */}
-                  <div className="team-card-footer pt-3 border-t border-gray-100">
+                  <div className="team-card-footer pt-3 border-t border-gray-100 space-y-1.5">
+                    {isAdmin && onOpenFormation && (
+                      <button
+                        onClick={() => onOpenFormation(team)}
+                        className="btn btn-outline-primary w-full justify-center text-xs font-bold py-1.5"
+                        title="Lihat & cetak 6 kartu formasi tim ini"
+                      >
+                        <Layers size={14} />
+                        <span>Kartu Formasi (6 Babak)</span>
+                      </button>
+                    )}
                     <button
                       onClick={() => onViewRoster(team)}
-                      className="btn btn-secondary w-full justify-center text-xs font-bold py-2"
+                      className="btn btn-secondary w-full justify-center text-xs font-bold py-1.5"
                     >
-                      <ListOrdered size={15} />
+                      <ListOrdered size={14} />
                       <span>{isAdmin ? 'Kelola Skuad Lengkap' : 'Lihat Skuad Lengkap'} ({teamPlayers.length})</span>
                     </button>
                   </div>

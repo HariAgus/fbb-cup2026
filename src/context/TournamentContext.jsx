@@ -90,6 +90,34 @@ export const TournamentProvider = ({ children }) => {
     saveCloudSettings(cloudSettings);
   }, [cloudSettings]);
 
+  // Auto-assign captain codes to existing teams that don't have one yet
+  // and immediately sync to Firebase so all devices see the codes
+  useEffect(() => {
+    const teamsWithoutCode = (data.teams || []).filter((t) => !t.captainCode);
+    if (teamsWithoutCode.length > 0) {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      const genCode = () => {
+        let code = 'FBB-';
+        for (let i = 0; i < 4; i++) {
+          code += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return code;
+      };
+      const patchedTeams = (data.teams || []).map((t) =>
+        t.captainCode ? t : { ...t, captainCode: genCode() }
+      );
+      const patchedData = { ...data, teams: patchedTeams };
+      setData(patchedData);
+      // Sync patched data to Firebase if configured
+      if (cloudSettings?.firebase?.projectId && cloudSettings?.firebase?.apiKey) {
+        syncWithFirebase(cloudSettings.firebase, patchedData).catch((err) => {
+          console.warn('Auto captain code sync to Firebase failed:', err.message);
+        });
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const showToast = (message, type = 'success') => {
     setNotification({ message, type, id: Date.now() });
     setTimeout(() => setNotification(null), 4000);
@@ -648,6 +676,16 @@ export const TournamentProvider = ({ children }) => {
   };
 
   // ---------------- TEAM ACTIONS ----------------
+  // Helper to generate a random captain access code (e.g. FBB-A3X9)
+  const _genCaptainCode = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = 'FBB-';
+    for (let i = 0; i < 4; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
+  };
+
   const addTeam = (team) => {
     const newTeam = {
       id: `team-${Date.now()}`,
@@ -657,7 +695,8 @@ export const TournamentProvider = ({ children }) => {
       phone: team.phone || '',
       color: team.color || '#E06020',
       logo: team.logo || '🏸',
-      playerIds: team.playerIds || []
+      playerIds: team.playerIds || [],
+      captainCode: team.captainCode || _genCaptainCode()
     };
 
     setData((prev) => {
@@ -737,6 +776,212 @@ export const TournamentProvider = ({ children }) => {
       return { ...prev, players: updatedPlayers, teams: updatedTeams };
     });
     showToast('Pemain dikeluarkan dari tim.');
+  };
+
+  const updateTeamFormationSlots = (teamId, formationSlots, formationRounds = null, formationMatchPlans = null, formationPrintInfo = null, formationCardDetails = null) => {
+    setData((prev) => ({
+      ...prev,
+      teams: (prev.teams || []).map((t) => {
+        if (t.id === teamId) {
+          return {
+            ...t,
+            formationSlots: formationSlots || t.formationSlots,
+            formationRounds: formationRounds || t.formationRounds,
+            formationMatchPlans: formationMatchPlans !== null ? formationMatchPlans : t.formationMatchPlans,
+            formationPrintInfo: formationPrintInfo !== null ? formationPrintInfo : t.formationPrintInfo,
+            formationCardDetails: formationCardDetails !== null ? formationCardDetails : t.formationCardDetails
+          };
+        }
+        return t;
+      })
+    }));
+    showToast('Konfigurasi kartu formasi berhasil disimpan!');
+  };
+
+  // Admin: set or regenerate captain code for a team, then immediately sync to Firebase
+  const updateTeamCaptainCode = async (teamId, code = null) => {
+    const newCode = code || _genCaptainCode();
+    const updatedTeams = (data.teams || []).map((t) =>
+      t.id === teamId ? { ...t, captainCode: newCode } : t
+    );
+    const updatedData = { ...data, teams: updatedTeams };
+
+    // Update local state
+    setData(updatedData);
+
+    // Immediately sync to Firebase so public (captain) page sees the new code
+    if (cloudSettings?.firebase?.projectId && cloudSettings?.firebase?.apiKey) {
+      try {
+        await syncWithFirebase(cloudSettings.firebase, updatedData);
+        showToast(`Kode Kapten: ${newCode} — tersimpan & disinkronkan ke Firebase ✓`);
+      } catch (err) {
+        showToast(`Kode diperbarui: ${newCode} (Firebase sync gagal: ${err.message})`, 'warning');
+      }
+    } else {
+      showToast(`Kode Kapten tim berhasil diperbarui: ${newCode}`);
+    }
+    return newCode;
+  };
+
+  // Public: captain updates card details using their team code (no auth required)
+  // Reads from latest data and syncs immediately to Firebase
+  const updateTeamCardDetailsByCode = async (teamId, captainCode, cardDetails) => {
+    const team = (data.teams || []).find((t) => t.id === teamId);
+    if (!team) {
+      showToast('Tim tidak ditemukan.', 'error');
+      return false;
+    }
+    if (!team.captainCode || team.captainCode.toUpperCase() !== captainCode.trim().toUpperCase()) {
+      showToast('Kode Kapten tidak valid. Silakan cek kembali kode dari admin.', 'error');
+      return false;
+    }
+    const updatedTeams = (data.teams || []).map((t) =>
+      t.id === teamId ? { ...t, formationCardDetails: cardDetails } : t
+    );
+    const updatedData = { ...data, teams: updatedTeams };
+    setData(updatedData);
+
+    // Sync immediately to Firebase so admin can see updated card details
+    if (cloudSettings?.firebase?.projectId && cloudSettings?.firebase?.apiKey) {
+      try {
+        await syncWithFirebase(cloudSettings.firebase, updatedData);
+        showToast('Detail pertandingan berhasil disimpan & disinkronkan ke Firebase!', 'success');
+      } catch (err) {
+        showToast(`Detail tersimpan lokal (Firebase sync gagal: ${err.message})`, 'warning');
+      }
+    } else {
+      showToast('Detail pertandingan kartu formasi berhasil disimpan oleh Kapten!', 'success');
+    }
+    return true;
+  };
+
+  // ---------------- FORMATION 6 CARDS GENERATOR ----------------
+  // Menghasilkan 6 kartu formasi untuk 5 babak penyisihan + 1 babak semifinal
+  // Berdasarkan aturan grading resmi:
+  // - P1 & P2: Grade A
+  // - P3: Grade B+ (Khusus berpasangan dengan Grade B di Partai 3)
+  // - P4 & P5: Grade B (Reguler B)
+  // - P6: Grade C
+  //
+  // Urutan Partai Sesi:
+  // - Partai 1 (Grade AB): Grade A + Grade B (P1/P2 & P4/P5) -> B+ TIDAK BOLEH BERMAIN DENGAN A!
+  // - Partai 2 (Grade AC): Grade A + Grade C (P2/P1 & P6)
+  // - Partai 3 (Grade B(+)B): Grade B+ + Grade B (P3 & P5/P4) -> B+ HANYA BISA BERMAIN DENGAN LEVEL B!
+  const getFormationCardsForTeam = (team, allPlayers = []) => {
+    if (!team) return { slots: {}, cards: [], isComplete: false, allUnique: false, teamPlayers: [] };
+
+    const teamPlayers = (team.playerIds || [])
+      .map((id) => allPlayers.find((p) => p.id === id))
+      .filter(Boolean);
+
+    const savedSlots = team.formationSlots || {};
+
+    const gradeAPlayers = teamPlayers.filter((p) => (p.level || 'B') === 'A');
+    const gradeBPlusPlayers = teamPlayers.filter((p) => (p.level || 'B') === 'B+');
+    const gradeBPlayers = teamPlayers.filter((p) => (p.level || 'B') === 'B');
+    const gradeCPlayers = teamPlayers.filter((p) => (p.level || 'B') === 'C');
+
+    const usedIds = new Set();
+
+    const getPlayer = (slotKey, preferredPool) => {
+      if (savedSlots[slotKey]) {
+        const found = teamPlayers.find((p) => p.id === savedSlots[slotKey]);
+        if (found) {
+          usedIds.add(found.id);
+          return found;
+        }
+      }
+      const candidate =
+        preferredPool.find((p) => !usedIds.has(p.id)) ||
+        teamPlayers.find((p) => !usedIds.has(p.id)) ||
+        null;
+      if (candidate) usedIds.add(candidate.id);
+      return candidate;
+    };
+
+    const p1 = getPlayer('p1', gradeAPlayers);
+    const p2 = getPlayer('p2', gradeAPlayers);
+    const p3 = getPlayer('p3', gradeBPlusPlayers.length > 0 ? gradeBPlusPlayers : gradeBPlayers);
+    const p4 = getPlayer('p4', gradeBPlayers);
+    const p5 = getPlayer('p5', gradeBPlayers);
+    const p6 = getPlayer('p6', gradeCPlayers);
+
+    const roundLabels = team.formationRounds || {
+      kartu1: 'Babak Penyisihan 1',
+      kartu2: 'Babak Penyisihan 2',
+      kartu3: 'Babak Penyisihan 3',
+      kartu4: 'Babak Penyisihan 4',
+      kartu5: 'Babak Penyisihan 5',
+      kartu6: 'Babak Semifinal'
+    };
+
+    // Susunan Kartu:
+    // P3 (Grade B+) hanya bermain di Partai 3 berpasangan dengan P4 atau P5 (Grade B).
+    // Partai 1 (Grade AB) memasangkan P1/P2 (Grade A) dengan P4/P5 (Grade B reguler).
+    // Partai 2 (Grade AC) memasangkan P2/P1 (Grade A) dengan P6 (Grade C).
+    const cards = [
+      {
+        cardIndex: 1,
+        cardTitle: 'Kartu 1',
+        defaultRound: roundLabels.kartu1 || 'Babak Penyisihan 1',
+        partai1: { label: 'Partai 1 (Grade AB)', requiredGrade: 'AB', player1: p1, p1Slot: 'P1', player2: p4, p2Slot: 'P4' },
+        partai2: { label: 'Partai 2 (Grade AC)', requiredGrade: 'AC', player1: p2, p1Slot: 'P2', player2: p6, p2Slot: 'P6' },
+        partai3: { label: 'Partai 3 (Grade B(+)B)', requiredGrade: 'B(+)B', player1: p3, p1Slot: 'P3', player2: p5, p2Slot: 'P5' }
+      },
+      {
+        cardIndex: 2,
+        cardTitle: 'Kartu 2',
+        defaultRound: roundLabels.kartu2 || 'Babak Penyisihan 2',
+        partai1: { label: 'Partai 1 (Grade AB)', requiredGrade: 'AB', player1: p1, p1Slot: 'P1', player2: p5, p2Slot: 'P5' },
+        partai2: { label: 'Partai 2 (Grade AC)', requiredGrade: 'AC', player1: p2, p1Slot: 'P2', player2: p6, p2Slot: 'P6' },
+        partai3: { label: 'Partai 3 (Grade B(+)B)', requiredGrade: 'B(+)B', player1: p3, p1Slot: 'P3', player2: p4, p2Slot: 'P4' }
+      },
+      {
+        cardIndex: 3,
+        cardTitle: 'Kartu 3',
+        defaultRound: roundLabels.kartu3 || 'Babak Penyisihan 3',
+        partai1: { label: 'Partai 1 (Grade AB)', requiredGrade: 'AB', player1: p2, p1Slot: 'P2', player2: p4, p2Slot: 'P4' },
+        partai2: { label: 'Partai 2 (Grade AC)', requiredGrade: 'AC', player1: p1, p1Slot: 'P1', player2: p6, p2Slot: 'P6' },
+        partai3: { label: 'Partai 3 (Grade B(+)B)', requiredGrade: 'B(+)B', player1: p3, p1Slot: 'P3', player2: p5, p2Slot: 'P5' }
+      },
+      {
+        cardIndex: 4,
+        cardTitle: 'Kartu 4',
+        defaultRound: roundLabels.kartu4 || 'Babak Penyisihan 4',
+        partai1: { label: 'Partai 1 (Grade AB)', requiredGrade: 'AB', player1: p2, p1Slot: 'P2', player2: p5, p2Slot: 'P5' },
+        partai2: { label: 'Partai 2 (Grade AC)', requiredGrade: 'AC', player1: p1, p1Slot: 'P1', player2: p6, p2Slot: 'P6' },
+        partai3: { label: 'Partai 3 (Grade B(+)B)', requiredGrade: 'B(+)B', player1: p3, p1Slot: 'P3', player2: p4, p2Slot: 'P4' }
+      },
+      {
+        cardIndex: 5,
+        cardTitle: 'Kartu 5',
+        defaultRound: roundLabels.kartu5 || 'Babak Penyisihan 5',
+        partai1: { label: 'Partai 1 (Grade AB)', requiredGrade: 'AB', player1: p1, p1Slot: 'P1', player2: p4, p2Slot: 'P4' },
+        partai2: { label: 'Partai 2 (Grade AC)', requiredGrade: 'AC', player1: p2, p1Slot: 'P2', player2: p6, p2Slot: 'P6' },
+        partai3: { label: 'Partai 3 (Grade B(+)B)', requiredGrade: 'B(+)B', player1: p3, p1Slot: 'P3', player2: p5, p2Slot: 'P5' }
+      },
+      {
+        cardIndex: 6,
+        cardTitle: 'Kartu 6',
+        defaultRound: roundLabels.kartu6 || 'Babak Semifinal',
+        partai1: { label: 'Partai 1 (Grade AB)', requiredGrade: 'AB', player1: p2, p1Slot: 'P2', player2: p5, p2Slot: 'P5' },
+        partai2: { label: 'Partai 2 (Grade AC)', requiredGrade: 'AC', player1: p1, p1Slot: 'P1', player2: p6, p2Slot: 'P6' },
+        partai3: { label: 'Partai 3 (Grade B(+)B)', requiredGrade: 'B(+)B', player1: p3, p1Slot: 'P3', player2: p4, p2Slot: 'P4' }
+      }
+    ];
+
+    const assignedList = [p1, p2, p3, p4, p5, p6].filter(Boolean);
+    const isComplete = assignedList.length === 6;
+    const allUnique = new Set(assignedList.map((p) => p.id)).size === 6;
+
+    return {
+      slots: { p1, p2, p3, p4, p5, p6 },
+      cards,
+      roundLabels,
+      isComplete,
+      allUnique,
+      teamPlayers
+    };
   };
 
   // ---------------- MATCH ACTIONS ----------------
@@ -1082,6 +1327,11 @@ export const TournamentProvider = ({ children }) => {
     addDoorprizeDraw,
     deleteDoorprizeDraw,
     resetDoorprizeHistory,
+    // Formation Cards methods
+    updateTeamFormationSlots,
+    updateTeamCaptainCode,
+    updateTeamCardDetailsByCode,
+    getFormationCardsForTeam: (team) => getFormationCardsForTeam(team, data.players || []),
     // Authentication methods & state (Pure Firebase Auth)
     currentUser,
     authLoading,

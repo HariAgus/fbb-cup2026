@@ -18,7 +18,8 @@ import {
   CalendarPlus,
   Flame,
   CheckCircle2,
-  Gift
+  Gift,
+  Layers
 } from 'lucide-react';
 import { useTournament } from '../context/TournamentContext';
 
@@ -48,6 +49,7 @@ export const AdminDrawer = ({
 
   const navItems = [
     { id: 'draw', label: 'Grading & Undian Tim', icon: Shuffle, badge: 'Pot Draw' },
+    { id: 'formations', label: 'Kartu Formasi (6 Babak)', icon: Layers, badge: '6 Kartu' },
     { id: 'doorprize', label: 'Spin & Undian Doorprize', icon: Gift, count: totalDoorprizes > 0 ? `${totalDoorprizes} Hadiah` : 'Undi 🎁' },
     { id: 'players', label: 'Manajemen Pemain', icon: Activity, count: totalPlayers },
     { id: 'teams', label: 'Kelola Tim & Skuad', icon: Users, count: totalTeams },
@@ -167,9 +169,19 @@ export const AdminDrawer = ({
           <div className="drawer-actions-grid">
             <button
               onClick={() => {
-                handleTabClick('draw');
+                handleTabClick('formations');
               }}
               className="drawer-action-btn btn-highlight"
+            >
+              <Layers size={15} />
+              <span>Kartu Formasi (6 Babak)</span>
+            </button>
+
+            <button
+              onClick={() => {
+                handleTabClick('draw');
+              }}
+              className="drawer-action-btn"
             >
               <Shuffle size={15} />
               <span>Kocok Tim (Pot Draw)</span>
