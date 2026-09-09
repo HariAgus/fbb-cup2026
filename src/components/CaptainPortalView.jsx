@@ -14,15 +14,31 @@ import {
   AlertTriangle,
   Info,
   LogOut,
-  Trophy
+  Clock,
+  Lock,
+  CalendarClock,
+  Copy,
+  Shield,
+  Sparkles,
+  Phone,
+  UserCheck
 } from 'lucide-react';
+import { formatDeadlineDisplay, getDeadlineTimeRemaining } from '../utils/dateUtils';
 
 // --- Captain Authentication Panel ---
-const CaptainLoginPanel = ({ teams, onLogin }) => {
+const CaptainLoginPanel = ({ teams, onLogin, globalDeadline = null }) => {
   const [selectedTeamId, setSelectedTeamId] = useState('');
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  const selectedTeam = useMemo(
+    () => teams.find((t) => t.id === selectedTeamId) || null,
+    [teams, selectedTeamId]
+  );
+
+  const deadline = globalDeadline || selectedTeam?.formationDeadline || null;
+  const deadlineInfo = useMemo(() => getDeadlineTimeRemaining(deadline), [deadline]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -57,6 +73,38 @@ const CaptainLoginPanel = ({ teams, onLogin }) => {
             Masukkan kode akses yang diberikan oleh <b>admin/panitia</b> untuk mengisi detail pertandingan kartu formasi tim Anda.
           </p>
         </div>
+
+        {/* Global Deadline Info on Login Screen */}
+        {deadline && (
+          <div
+            className={`captain-login-deadline-card ${
+              deadlineInfo.isExpired ? 'deadline-locked' : 'deadline-active'
+            }`}
+          >
+            <div className="captain-login-deadline-icon">
+              {deadlineInfo.isExpired ? <Lock size={18} /> : <Clock size={18} />}
+            </div>
+            <div className="captain-login-deadline-body">
+              <div className="captain-login-deadline-header">
+                <span className="captain-login-deadline-title">
+                  {deadlineInfo.isExpired ? 'Batas Waktu Pengisian Ditutup' : 'Batas Waktu Input Formasi'}
+                </span>
+                <span
+                  className={`captain-login-deadline-badge ${
+                    deadlineInfo.isExpired ? 'badge-locked' : 'badge-active'
+                  }`}
+                >
+                  {deadlineInfo.isExpired ? '🔒 Terkunci' : '⏰ Aktif'}
+                </span>
+              </div>
+              <div className="captain-login-deadline-time">
+                <span>{formatDeadlineDisplay(deadline)}</span>
+                <span className="deadline-dot">•</span>
+                <span className="deadline-countdown-highlight">{deadlineInfo.text}</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="captain-login-form">
           <div className="captain-form-group">
@@ -135,7 +183,9 @@ const CaptainLoginPanel = ({ teams, onLogin }) => {
       </div>
     </div>
   );
-};// --- Grade badge helper ---
+};
+
+// --- Grade badge helper ---
 const renderGradeBadge = (level = 'B') => {
   const lvl = level || 'B';
   const map = { A: 'a', 'B+': 'b-plus', B: 'b', C: 'c' };
@@ -170,37 +220,54 @@ const CaptainCardInput = ({
   details,
   onChange,
   teamColor,
+  teamName,
+  captainName,
   isSemifinal,
-  usedMatches = []
+  usedMatches = [],
+  isExpired = false,
+  onCopySingle = null,
+  isCopied = false
 }) => {
   const currentMatch = details.round || '';
 
   return (
     <div
-      className="captain-card-item"
+      className={`captain-card-item ${isExpired ? 'card-readonly-mode' : ''}`}
       style={{ borderTop: `4px solid ${isSemifinal ? '#D97706' : (teamColor || '#E06020')}` }}
     >
-      {/* Card Header — no "Babak Penyisihan X" subtitle */}
+      {/* Card Header */}
       <div className="captain-card-header">
-        <div className={`card-number-badge ${isSemifinal ? 'badge-semifinal' : ''}`}>
-          {card.cardIndex}
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+          <div className={`card-number-badge ${isSemifinal ? 'badge-semifinal' : ''}`}>
+            {card.cardIndex}
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="captain-card-title">{card.cardTitle}</div>
+            {currentMatch ? (
+              <div className="card-round-tag round-assigned" style={{ marginTop: '2px' }}>
+                🎯 {currentMatch}
+              </div>
+            ) : (
+              <div className="card-round-tag round-unassigned" style={{ marginTop: '2px' }}>
+                ⏳ Belum Diset Match-nya
+              </div>
+            )}
+          </div>
         </div>
-        <div>
-          <div className="captain-card-title">{card.cardTitle}</div>
-          {currentMatch && (
-            <div className={`card-round-tag ${isSemifinal ? 'round-semifinal' : ''}`} style={{ marginTop: '2px' }}>
-              {currentMatch}
-            </div>
-          )}
-        </div>
-        {isSemifinal && (
-          <span className="ml-auto">
-            <Trophy size={18} className="text-amber-500" />
-          </span>
+
+        {onCopySingle && (
+          <button
+            type="button"
+            onClick={() => onCopySingle(card)}
+            className="btn-icon-subtle text-xs p-1.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 shadow-2xs"
+            title="Salin rincian kartu ini ke WhatsApp"
+          >
+            {isCopied ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
+          </button>
         )}
       </div>
 
-      {/* Partai Player Details — matches admin FormationsView style */}
+      {/* Partai Player Details */}
       <div className="partai-rows-container">
         {/* Partai 1: Grade AB */}
         <div className="partai-row-box partai-ab">
@@ -248,34 +315,52 @@ const CaptainCardInput = ({
         </div>
       </div>
 
-      {/* Manual Match Detail Input - Hanya Babak / Match ke berapa */}
+      {/* Match Detail Section */}
       <div className="captain-card-inputs">
-        <div className="captain-input-group">
-          <label className="captain-input-label">
-            <Calendar size={13} />
-            Babak / Match ke berapa:
-          </label>
-          <select
-            value={currentMatch}
-            onChange={(e) => onChange(card.cardIndex, 'round', e.target.value)}
-            className="captain-input-field captain-select-field"
-          >
-            <option value="">-- Pilih Babak / Match (1 - 6) --</option>
-            {[1, 2, 3, 4, 5, 6].map((num) => {
-              const matchValue = `Match ${num}`;
-              const isUsed = usedMatches.includes(matchValue);
-              return (
-                <option
-                  key={num}
-                  value={matchValue}
-                  disabled={isUsed}
-                >
-                  {matchValue} {isUsed ? '(Sudah dipilih di kartu lain)' : ''}
-                </option>
-              );
-            })}
-          </select>
-        </div>
+        {isExpired ? (
+          <div className="p-2.5 bg-gray-50/90 rounded-xl border border-gray-200/80 flex items-center justify-between">
+            <div className="flex items-center gap-1.5 text-xs text-gray-600 font-medium">
+              <Calendar size={13} className="text-gray-500" />
+              <span>Jadwal Babak / Match:</span>
+            </div>
+            {currentMatch ? (
+              <span className="font-extrabold text-xs text-emerald-800 bg-emerald-100/90 border border-emerald-200 px-2.5 py-0.5 rounded-md">
+                🎯 {currentMatch}
+              </span>
+            ) : (
+              <span className="text-2xs text-gray-500 italic font-medium bg-gray-200/70 px-2 py-0.5 rounded">
+                Belum Ditentukan
+              </span>
+            )}
+          </div>
+        ) : (
+          <div className="captain-input-group">
+            <label className="captain-input-label">
+              <Calendar size={13} />
+              Babak / Match ke berapa:
+            </label>
+            <select
+              value={currentMatch}
+              onChange={(e) => onChange(card.cardIndex, 'round', e.target.value)}
+              className="captain-input-field captain-select-field"
+            >
+              <option value="">-- Pilih Babak / Match (1 - 6) --</option>
+              {[1, 2, 3, 4, 5, 6].map((num) => {
+                const matchValue = `Match ${num}`;
+                const isUsed = usedMatches.includes(matchValue);
+                return (
+                  <option
+                    key={num}
+                    value={matchValue}
+                    disabled={isUsed}
+                  >
+                    {matchValue} {isUsed ? '(Sudah dipilih di kartu lain)' : ''}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -296,6 +381,8 @@ export const CaptainPortalView = () => {
   const [authenticatedTeamId, setAuthenticatedTeamId] = useState(null);
   const [captainCode, setCaptainCode] = useState('');
   const [isSaved, setIsSaved] = useState(false);
+  const [copiedCardIndex, setCopiedCardIndex] = useState(null);
+  const [copiedAllCards, setCopiedAllCards] = useState(false);
 
   const [localCardDetails, setLocalCardDetails] = useState({
     1: { round: '', court: '', opponent: '' },
@@ -364,9 +451,28 @@ export const CaptainPortalView = () => {
     }));
   };
 
+  const [currentTime, setCurrentTime] = useState(Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 15000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const deadline = data.formationDeadline || authenticatedTeam?.formationDeadline || null;
+  const deadlineInfo = useMemo(() => {
+    return getDeadlineTimeRemaining(deadline);
+  }, [deadline, currentTime]);
+  const isExpired = deadlineInfo.isExpired;
+
   const [isSaving, setIsSaving] = React.useState(false);
 
   const handleSave = async () => {
+    if (isExpired) {
+      showToast('Batas waktu pengisian formasi telah berakhir. Perubahan tidak dapat disimpan.', 'error');
+      return;
+    }
     setIsSaving(true);
     try {
       const success = await updateTeamCardDetailsByCode(
@@ -382,6 +488,67 @@ export const CaptainPortalView = () => {
     }
   };
 
+  // WhatsApp copy single card for captain
+  const handleCopySingleCard = (card) => {
+    if (!authenticatedTeam) return;
+    const details = localCardDetails[card.cardIndex] || {};
+    const roundLabel = details.round || '-';
+
+    const p1_p1 = card.partai1?.player1?.name || (card.partai1?.p1Slot || 'P1');
+    const p1_p2 = card.partai1?.player2?.name || (card.partai1?.p2Slot || 'P4');
+    const p2_p1 = card.partai2?.player1?.name || (card.partai2?.p1Slot || 'P2');
+    const p2_p2 = card.partai2?.player2?.name || (card.partai2?.p2Slot || 'P6');
+    const p3_p1 = card.partai3?.player1?.name || (card.partai3?.p1Slot || 'P3');
+    const p3_p2 = card.partai3?.player2?.name || (card.partai3?.p5Slot || 'P5');
+
+    let text = `🏸 *${card.cardTitle.toUpperCase()} - ${authenticatedTeam.name}*\n`;
+    text += `*Kapten:* ${authenticatedTeam.captain || '-'}\n`;
+    text += `*Dimainkan Pada:* ${roundLabel}\n`;
+    text += `=====================================\n`;
+    text += `1️⃣ *Partai 1 (Grade AB):* ${p1_p1} & ${p1_p2}\n`;
+    text += `2️⃣ *Partai 2 (Grade AC):* ${p2_p1} & ${p2_p2}\n`;
+    text += `3️⃣ *Partai 3 (Grade B(+)B):* ${p3_p1} & ${p3_p2}\n`;
+    text += `=====================================\n`;
+    text += `_Disahkan resmi oleh Kapten Tim ${authenticatedTeam.name}._`;
+
+    navigator.clipboard.writeText(text);
+    setCopiedCardIndex(card.cardIndex);
+    showToast(`Rincian ${card.cardTitle} berhasil disalin ke WhatsApp!`, 'success');
+    setTimeout(() => setCopiedCardIndex(null), 2000);
+  };
+
+  // WhatsApp copy all 6 cards for captain
+  const handleCopyAllCards = () => {
+    if (!authenticatedTeam || !formationData) return;
+    let text = `🏸 *DAFTAR 6 KARTU FORMASI - ${authenticatedTeam.name.toUpperCase()}*\n`;
+    text += `*Kapten:* ${authenticatedTeam.captain || '-'}\n`;
+    text += `*Turnamen:* FBB Cup Badminton 2026\n`;
+    text += `-------------------------------------\n\n`;
+
+    (formationData.cards || []).forEach((card) => {
+      const details = localCardDetails[card.cardIndex] || {};
+      const roundLabel = details.round || '-';
+      const p1_p1 = card.partai1?.player1?.name || (card.partai1?.p1Slot || 'P1');
+      const p1_p2 = card.partai1?.player2?.name || (card.partai1?.p2Slot || 'P4');
+      const p2_p1 = card.partai2?.player1?.name || (card.partai2?.p1Slot || 'P2');
+      const p2_p2 = card.partai2?.player2?.name || (card.partai2?.p2Slot || 'P6');
+      const p3_p1 = card.partai3?.player1?.name || (card.partai3?.p1Slot || 'P3');
+      const p3_p2 = card.partai3?.player2?.name || (card.partai3?.p5Slot || 'P5');
+
+      text += `📋 *${card.cardTitle.toUpperCase()}* (${roundLabel})\n`;
+      text += `1️⃣ *Partai 1 (AB):* ${p1_p1} & ${p1_p2}\n`;
+      text += `2️⃣ *Partai 2 (AC):* ${p2_p1} & ${p2_p2}\n`;
+      text += `3️⃣ *Partai 3 (B(+)B):* ${p3_p1} & ${p3_p2}\n\n`;
+    });
+
+    text += `_Disahkan resmi oleh Kapten Tim ${authenticatedTeam.name}._`;
+
+    navigator.clipboard.writeText(text);
+    setCopiedAllCards(true);
+    showToast('Format 6 Kartu berhasil disalin ke WhatsApp!', 'success');
+    setTimeout(() => setCopiedAllCards(false), 2500);
+  };
+
   if (!authenticatedTeamId) {
     return (
       <div className="captain-portal-container">
@@ -394,17 +561,22 @@ export const CaptainPortalView = () => {
             📋 Portal Kartu Formasi Kapten
           </h2>
           <p className="captain-portal-hero-desc">
-            Kapten tim dapat menentukan urutan Babak / Match (Match 1 - 6) untuk setiap kartu formasi secara mandiri menggunakan kode akses dari admin.
+            Kapten tim dapat melihat susunan 6 kartu formasi pemain dan menentukan urutan Match (Match 1 - 6) secara mandiri menggunakan kode akses resmi.
           </p>
         </div>
-        <CaptainLoginPanel teams={teams} onLogin={handleLogin} />
+        <CaptainLoginPanel
+          teams={teams}
+          onLogin={handleLogin}
+          globalDeadline={data.formationDeadline || null}
+        />
       </div>
     );
   }
 
   return (
     <div className="captain-portal-container">
-      <div className="captain-auth-banner">
+      {/* Captain Auth Banner with Team Info */}
+      <div className="captain-auth-banner glass-card">
         <div className="captain-auth-info">
           <div
             className="captain-auth-team-logo"
@@ -416,21 +588,39 @@ export const CaptainPortalView = () => {
             <span>{authenticatedTeam?.logo || '🏸'}</span>
           </div>
           <div>
-            <div className="captain-auth-team-name">{authenticatedTeam?.name}</div>
-            <div className="captain-auth-team-meta">
-              <ShieldCheck size={13} className="text-emerald-500" />
-              <span>Masuk sebagai Kapten • Kode: <b>{captainCode}</b></span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="captain-auth-team-name">{authenticatedTeam?.name}</span>
+              <span className="team-code-tag">{authenticatedTeam?.shortName || 'PB'}</span>
+              <span
+                className={`text-3xs px-2 py-0.5 rounded-full font-bold uppercase ${
+                  isExpired ? 'bg-rose-100 text-rose-800 border border-rose-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                }`}
+              >
+                {isExpired ? '🔒 Mode Lihat (Read-Only)' : '⏰ Mode Edit Terbuka'}
+              </span>
+            </div>
+            <div className="captain-auth-team-meta mt-1">
+              <ShieldCheck size={13} className="text-emerald-600" />
+              <span>
+                Kapten: <b>{authenticatedTeam?.captain || '-'}</b> • Kode: <b>{captainCode}</b>
+              </span>
             </div>
           </div>
         </div>
+
         <div className="captain-auth-actions">
-          <span className="captain-auth-roster">
-            <Users size={14} />
-            {teamPlayers.length} Pemain
-          </span>
+          <button
+            onClick={handleCopyAllCards}
+            className="btn btn-secondary text-xs font-bold"
+            title="Salin seluruh 6 kartu ke WhatsApp"
+          >
+            {copiedAllCards ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
+            <span>{copiedAllCards ? 'Tersalin!' : 'Salin 6 Kartu (WA)'}</span>
+          </button>
+
           <button
             onClick={handleLogout}
-            className="btn btn-secondary text-xs font-bold"
+            className="btn btn-secondary text-xs font-bold text-gray-600 hover:text-rose-600"
             title="Keluar dari sesi kapten"
           >
             <LogOut size={14} />
@@ -439,18 +629,54 @@ export const CaptainPortalView = () => {
         </div>
       </div>
 
-      <div className="captain-edit-notice">
-        <Info size={15} className="flex-shrink-0 text-blue-500" />
-        <span>
-          Pilih <b>Babak / Match (Match 1 s/d 6)</b> untuk setiap kartu formasi di bawah ini, lalu klik <b>Simpan Detail Pertandingan</b>. Setiap match hanya dapat dipilih pada 1 kartu formasi.
-        </span>
-      </div>
+      {/* 🌟 Informative Status Card (Enhanced Display) */}
+      {deadline && (
+        <div className={`captain-info-status-card glass-card ${isExpired ? 'card-locked' : 'card-active'} mb-5`}>
+          <div className="status-card-inner">
+            <div className={`status-icon-badge ${isExpired ? 'locked' : 'active'}`}>
+              {isExpired ? <Shield size={22} /> : <Clock size={22} />}
+            </div>
+            <div className="status-content flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap mb-1">
+                <span className={`status-badge-tag ${isExpired ? 'locked' : 'active'}`}>
+                  {isExpired ? '🔒 STATUS FORMASI FINAL & TERKUNCI' : '⏰ PENGISIAN BABAK / MATCH TERBUKA'}
+                </span>
+                <span
+                  className={`text-2xs font-bold px-2 py-0.5 rounded ${
+                    isExpired ? 'bg-rose-100 text-rose-900' : 'bg-amber-100 text-amber-950'
+                  }`}
+                >
+                  {isExpired
+                    ? `Batas Ditutup (${deadlineInfo.text})`
+                    : `Sisa Waktu: ${deadlineInfo.text}`}
+                </span>
+              </div>
+              <h4 className="status-card-heading">
+                {isExpired
+                  ? 'Akses Pengeditan Telah Berakhir — Anda Tetap Dapat Memeriksa & Menyalin Seluruh Kartu'
+                  : 'Tentukan Urutan Match (Match 1 s/d 6) untuk Setiap Kartu Formasi'}
+              </h4>
+              <p className="status-card-text">
+                {isExpired ? (
+                  <span>
+                    Batas waktu pengisian formasi turnamen telah resmi berakhir pada <b>{formatDeadlineDisplay(deadline)}</b>. Susunan pemain tiap partai telah dikunci oleh panitia. Anda dapat memeriksa susunan 6 kartu tim dan membagikannya ke WhatsApp.
+                  </span>
+                ) : (
+                  <span>
+                    Silakan tentukan nomor babak/match untuk masing-masing kartu di bawah ini sebelum batas akhir <b>{formatDeadlineDisplay(deadline)}</b>. Klik tombol <b>Simpan Detail Pertandingan</b> di bagian bawah setelah selesai.
+                  </span>
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {formationData ? (
         <div className="captain-cards-grid">
           {(formationData.cards || []).map((card) => {
             const isSemifinal = card.cardIndex === 6;
-            // Get all used match values on OTHER cards
+            const isCardCopied = copiedCardIndex === card.cardIndex;
             const usedMatches = Object.entries(localCardDetails)
               .filter(([idx, detail]) => String(idx) !== String(card.cardIndex) && Boolean(detail?.round))
               .map(([, detail]) => detail.round);
@@ -462,8 +688,13 @@ export const CaptainPortalView = () => {
                 details={localCardDetails[card.cardIndex] || {}}
                 onChange={handleCardDetailChange}
                 teamColor={authenticatedTeam?.color}
+                teamName={authenticatedTeam?.name}
+                captainName={authenticatedTeam?.captain}
                 isSemifinal={isSemifinal}
                 usedMatches={usedMatches}
+                isExpired={isExpired}
+                onCopySingle={handleCopySingleCard}
+                isCopied={isCardCopied}
               />
             );
           })}
@@ -481,34 +712,54 @@ export const CaptainPortalView = () => {
       {formationData && (
         <div className="captain-save-bar">
           <div className="captain-save-status">
-            {isSaved ? (
+            {isExpired ? (
+              <span className="text-rose-700 text-xs md:text-sm font-bold flex items-center gap-1.5">
+                <Lock size={15} />
+                <span>Mode Hanya Baca — Susunan kartu formasi telah terkunci secara permanen.</span>
+              </span>
+            ) : isSaved ? (
               <span className="captain-save-ok">
                 <Check size={15} className="text-emerald-600" />
-                Detail pertandingan tersimpan!
+                <span>Detail pertandingan tersimpan ✓</span>
               </span>
             ) : (
-              <span className="text-muted text-sm">
-                Belum disimpan — klik tombol Simpan Detail setelah selesai mengisi.
+              <span className="text-muted text-xs md:text-sm">
+                Belum disimpan — klik tombol <b>Simpan Detail Pertandingan</b> setelah selesai mengisi.
               </span>
             )}
           </div>
-          <button
-            onClick={handleSave}
-            className="btn btn-primary font-bold"
-            disabled={isSaved || isSaving}
-          >
-            {isSaving ? (
-              <>
-                <span className="animate-spin text-sm">⏳</span>
-                <span>Menyimpan ke Firebase...</span>
-              </>
-            ) : (
-              <>
-                <Save size={16} />
-                <span>{isSaved ? 'Tersimpan ✓' : 'Simpan Detail Pertandingan'}</span>
-              </>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleCopyAllCards}
+              className="btn btn-secondary font-bold text-xs"
+              title="Salin seluruh 6 kartu formasi ke WhatsApp"
+            >
+              {copiedAllCards ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
+              <span>{copiedAllCards ? 'Tersalin!' : 'Salin Semua (WA)'}</span>
+            </button>
+
+            {!isExpired && (
+              <button
+                onClick={handleSave}
+                className="btn btn-primary font-bold"
+                disabled={isSaved || isSaving}
+              >
+                {isSaving ? (
+                  <>
+                    <span className="animate-spin text-sm">⏳</span>
+                    <span>Menyimpan ke Firebase...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save size={16} />
+                    <span>{isSaved ? 'Tersimpan ✓' : 'Simpan Detail Pertandingan'}</span>
+                  </>
+                )}
+              </button>
             )}
-          </button>
+          </div>
         </div>
       )}
     </div>

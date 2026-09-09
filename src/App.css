@@ -6505,3 +6505,454 @@
   color: #15803D;
 }
 
+/* ================= Global Tournament Formation Deadline Styling ================= */
+.global-deadline-admin-card {
+  background: linear-gradient(135deg, #ffffff 0%, #fffbf2 50%, #fff7ed 100%);
+  border: 1.5px solid #FDBA74;
+  border-radius: 16px;
+  padding: 18px 22px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 16px rgba(224, 96, 32, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+  position: relative;
+  overflow: hidden;
+}
+
+.global-deadline-admin-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #E06020 0%, #F59E0B 50%, #10B981 100%);
+}
+
+.global-deadline-header {
+  margin-bottom: 14px;
+}
+
+.global-deadline-title-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.global-deadline-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #FFEDD5 0%, #FED7AA 100%);
+  color: #C2410C;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(234, 88, 12, 0.15);
+  border: 1px solid rgba(251, 146, 60, 0.3);
+}
+
+.global-deadline-title {
+  font-size: 15.5px;
+  font-weight: 800;
+  color: #1E293B;
+  letter-spacing: -0.2px;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.global-deadline-desc {
+  font-size: 12px;
+  color: #64748B;
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+.global-deadline-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.global-deadline-status-pill.status-active {
+  background: #ECFDF5;
+  color: #065F46;
+  border: 1px solid #A7F3D0;
+}
+
+.global-deadline-status-pill.status-expired {
+  background: #FEF2F2;
+  color: #991B1B;
+  border: 1px solid #FECACA;
+}
+
+.global-deadline-status-pill.status-open {
+  background: #F1F5F9;
+  color: #475569;
+  border: 1px solid #CBD5E1;
+}
+
+.global-deadline-controls {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+.global-deadline-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.global-deadline-info-row.row-active {
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  color: #92400E;
+}
+
+.global-deadline-info-row.row-expired {
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  color: #991B1B;
+}
+
+.deadline-countdown-badge {
+  background: #fff;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 800;
+  font-size: 11.5px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.global-deadline-form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  align-items: flex-end;
+}
+
+@media (min-width: 768px) {
+  .global-deadline-form-grid {
+    grid-template-columns: 280px 1fr auto;
+  }
+}
+
+.deadline-datetime-input {
+  background: #ffffff;
+  border: 1.5px solid #CBD5E1;
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.deadline-datetime-input:focus {
+  border-color: #E06020;
+  box-shadow: 0 0 0 3px rgba(224, 96, 32, 0.12);
+}
+
+.preset-btn {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  color: #334155;
+  transition: all 0.15s ease-in-out;
+}
+
+.preset-btn:hover {
+  background: #FFEDD5;
+  border-color: #FDBA74;
+  color: #9A3412;
+  transform: translateY(-1px);
+}
+
+.deadline-actions-col {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-2xs {
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 6px;
+}
+
+.captain-deadline-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.captain-deadline-badge.active {
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  color: #92400E;
+}
+
+.captain-deadline-badge.expired {
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  color: #991B1B;
+}
+
+/* =========================================================
+   CAPTAIN PORTAL ENHANCED STATUS CARD & READ-ONLY STYLING
+   ========================================================= */
+
+.captain-info-status-card {
+  border-radius: 16px;
+  padding: 18px 22px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.08);
+  margin-top: 8px;
+  margin-bottom: 24px;
+}
+
+.captain-info-status-card.card-active {
+  background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 50%, #FDE68A 100%);
+  border: 1.5px solid #F59E0B;
+}
+
+.captain-info-status-card.card-locked {
+  background: linear-gradient(135deg, #FFF1F2 0%, #FFE4E6 50%, #FECDD3 100%);
+  border: 1.5px solid #F43F5E;
+}
+
+.status-card-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.status-icon-badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.status-icon-badge.active {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  color: #FFFFFF;
+  border: 2px solid #FDE68A;
+}
+
+.status-icon-badge.locked {
+  background: linear-gradient(135deg, #E11D48 0%, #BE123C 100%);
+  color: #FFFFFF;
+  border: 2px solid #FECDD3;
+}
+
+.status-badge-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.status-badge-tag.active {
+  background: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #FCD34D;
+}
+
+.status-badge-tag.locked {
+  background: #FFE4E6;
+  color: #9F1239;
+  border: 1px solid #FDA4AF;
+}
+
+.status-card-heading {
+  font-size: 15px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0 0 6px 0;
+  line-height: 1.35;
+}
+
+.status-card-text {
+  font-size: 13px;
+  color: #334155;
+  margin: 0;
+  line-height: 1.55;
+}
+
+.card-readonly-mode {
+  background: #FAFAFA;
+  border-color: #E2E8F0 !important;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+}
+
+.card-round-tag.round-assigned {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #DCFCE7;
+  color: #15803D;
+  border: 1px solid #86EFAC;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.card-round-tag.round-unassigned {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #F1F5F9;
+  color: #64748B;
+  border: 1px solid #CBD5E1;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Captain Login Screen Deadline Box */
+.captain-login-deadline-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  margin-bottom: 18px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  transition: all 0.2s ease;
+}
+
+.captain-login-deadline-card.deadline-locked {
+  background: linear-gradient(135deg, #FFF1F2 0%, #FFE4E6 100%);
+  border: 1.5px solid #FECDD3;
+}
+
+.captain-login-deadline-card.deadline-active {
+  background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+  border: 1.5px solid #FDE68A;
+}
+
+.captain-login-deadline-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.deadline-locked .captain-login-deadline-icon {
+  background: #FFE4E6;
+  color: #E11D48;
+  border: 1px solid #FDA4AF;
+}
+
+.deadline-active .captain-login-deadline-icon {
+  background: #FEF3C7;
+  color: #D97706;
+  border: 1px solid #FCD34D;
+}
+
+.captain-login-deadline-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.captain-login-deadline-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.captain-login-deadline-title {
+  font-size: 12.5px;
+  font-weight: 800;
+}
+
+.deadline-locked .captain-login-deadline-title {
+  color: #9F1239;
+}
+
+.deadline-active .captain-login-deadline-title {
+  color: #92400E;
+}
+
+.captain-login-deadline-badge {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.captain-login-deadline-badge.badge-locked {
+  background: #FFE4E6;
+  color: #9F1239;
+  border: 1px solid #FDA4AF;
+}
+
+.captain-login-deadline-badge.badge-active {
+  background: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #FCD34D;
+}
+
+.captain-login-deadline-time {
+  font-size: 11.5px;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.deadline-locked .captain-login-deadline-time {
+  color: #881337;
+}
+
+.deadline-active .captain-login-deadline-time {
+  color: #78350F;
+}
+
+.deadline-dot {
+  opacity: 0.5;
+}
+
+.deadline-countdown-highlight {
+  font-weight: 800;
+}
+
+
+
+

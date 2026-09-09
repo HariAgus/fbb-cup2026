@@ -835,6 +835,48 @@ export const TournamentProvider = ({ children }) => {
     return newCode;
   };
 
+  // Admin: set global tournament deadline for all formation cards input, then sync to Firebase
+  const updateTournamentFormationDeadline = async (deadline = null) => {
+    const updatedTeams = (data.teams || []).map((t) => ({
+      ...t,
+      formationDeadline: deadline
+    }));
+
+    const updatedData = {
+      ...data,
+      teams: updatedTeams,
+      formationDeadline: deadline
+    };
+
+    setData(updatedData);
+
+    if (cloudSettings?.firebase?.projectId && cloudSettings?.firebase?.apiKey) {
+      try {
+        await syncWithFirebase(cloudSettings.firebase, updatedData);
+        showToast(
+          deadline
+            ? `Batas waktu formasi turnamen berhasil disimpan & disinkronkan ke Firebase ✓`
+            : `Batas waktu formasi turnamen dihapus & disinkronkan ke Firebase ✓`,
+          'success'
+        );
+      } catch (err) {
+        showToast(`Batas waktu tersimpan lokal (Firebase sync gagal: ${err.message})`, 'warning');
+      }
+    } else {
+      showToast(
+        deadline
+          ? `Batas waktu pengisian formasi turnamen berhasil diatur!`
+          : `Batas waktu pengisian formasi turnamen dihapus (bebas batas waktu)!`,
+        'success'
+      );
+    }
+    return true;
+  };
+
+  const updateTeamFormationDeadline = (teamId, deadline = null, applyToAll = true) => {
+    return updateTournamentFormationDeadline(deadline);
+  };
+
   // Public: captain updates card details using their team code (no auth required)
   // Reads from latest data and syncs immediately to Firebase
   const updateTeamCardDetailsByCode = async (teamId, captainCode, cardDetails) => {
@@ -847,6 +889,14 @@ export const TournamentProvider = ({ children }) => {
       showToast('Kode Kapten tidak valid. Silakan cek kembali kode dari admin.', 'error');
       return false;
     }
+
+    // Check if deadline has passed
+    const deadline = team.formationDeadline || data.formationDeadline;
+    if (deadline && new Date().getTime() > new Date(deadline).getTime()) {
+      showToast('Batas maksimal pengisian kartu formasi telah berakhir. Input tidak dapat diubah lagi.', 'error');
+      return false;
+    }
+
     const updatedTeams = (data.teams || []).map((t) =>
       t.id === teamId ? { ...t, formationCardDetails: cardDetails } : t
     );
@@ -1342,6 +1392,8 @@ export const TournamentProvider = ({ children }) => {
     // Formation Cards methods
     updateTeamFormationSlots,
     updateTeamCaptainCode,
+    updateTeamFormationDeadline,
+    updateTournamentFormationDeadline,
     updateTeamCardDetailsByCode,
     getFormationCardsForTeam: (team) => getFormationCardsForTeam(team, data.players || []),
     // Authentication methods & state (Pure Firebase Auth)
