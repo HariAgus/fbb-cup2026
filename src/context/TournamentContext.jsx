@@ -800,7 +800,19 @@ export const TournamentProvider = ({ children }) => {
 
   // Admin: set or regenerate captain code for a team, then immediately sync to Firebase
   const updateTeamCaptainCode = async (teamId, code = null) => {
-    const newCode = code || _genCaptainCode();
+    let newCode;
+    if (code) {
+      let raw = code.trim().toUpperCase();
+      let suffix = raw.replace(/^FBB-?/i, '');
+      if (suffix.length !== 4 || !/^[A-Z0-9]{4}$/.test(suffix)) {
+        showToast('Format kode kapten harus FBB-XXXX (4 karakter huruf/angka setelah FBB-)', 'error');
+        return false;
+      }
+      newCode = `FBB-${suffix}`;
+    } else {
+      newCode = _genCaptainCode();
+    }
+
     const updatedTeams = (data.teams || []).map((t) =>
       t.id === teamId ? { ...t, captainCode: newCode } : t
     );
@@ -813,12 +825,12 @@ export const TournamentProvider = ({ children }) => {
     if (cloudSettings?.firebase?.projectId && cloudSettings?.firebase?.apiKey) {
       try {
         await syncWithFirebase(cloudSettings.firebase, updatedData);
-        showToast(`Kode Kapten: ${newCode} — tersimpan & disinkronkan ke Firebase ✓`);
+        showToast(`Kode Kapten: ${newCode} — tersimpan & disinkronkan ke Firebase ✓`, 'success');
       } catch (err) {
         showToast(`Kode diperbarui: ${newCode} (Firebase sync gagal: ${err.message})`, 'warning');
       }
     } else {
-      showToast(`Kode Kapten tim berhasil diperbarui: ${newCode}`);
+      showToast(`Kode Kapten tim berhasil diperbarui: ${newCode}`, 'success');
     }
     return newCode;
   };

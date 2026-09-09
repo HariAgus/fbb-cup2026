@@ -34,6 +34,17 @@ export const StandingsView = ({ setActiveTab }) => {
     );
   };
 
+  const getTeamPlayerCount = (team) => {
+    if (!team) return 0;
+    const pIds = new Set(team.playerIds || []);
+    (data?.players || []).forEach((p) => {
+      if (p.teamId === team.id) {
+        pIds.add(p.id);
+      }
+    });
+    return pIds.size || (team.members?.length || 0);
+  };
+
   const filteredStandings = (standings || []).filter((item) =>
     item.team.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (item.team.shortName && item.team.shortName.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -159,7 +170,7 @@ export const StandingsView = ({ setActiveTab }) => {
                             <span className="team-full-name">{item.team.name}</span>
                             <span className="team-code-tag">{item.team.shortName || 'TIM'}</span>
                             <span className="text-xs text-muted">
-                              ({item.team.members?.length || 0} Peserta)
+                              ({getTeamPlayerCount(item.team)} Peserta)
                             </span>
                           </div>
                         </div>
