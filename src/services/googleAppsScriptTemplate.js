@@ -89,8 +89,12 @@ function exportToVisualTables(data) {
   var teamsMap = {};
   (data.teams || []).forEach(function(t) {
     teamsMap[t.id] = t;
+    var pCount = (t.playerIds || []).length || (t.members || []).length;
+    if (pCount === 0 && data.players) {
+      pCount = data.players.filter(function(p) { return p.teamId === t.id; }).length;
+    }
     teamSheet.getRange(tRow, 1, 1, 6).setValues([[
-      t.id, t.name, t.shortName || "-", t.captain || "-", t.phone || "-", (t.members || []).length
+      t.id, t.name, t.shortName || "-", t.captain || "-", t.phone || "-", pCount
     ]]);
     tRow++;
   });

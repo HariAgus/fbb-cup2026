@@ -5986,6 +5986,61 @@
   flex-wrap: wrap;
 }
 
+.captain-code-edit-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.captain-code-input-box {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 2px solid #D97706;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.15);
+}
+
+.captain-code-prefix-badge {
+  background: #FEF3C7;
+  color: #92400E;
+  font-family: 'Courier New', monospace;
+  font-size: 18px;
+  font-weight: 900;
+  padding: 8px 12px;
+  border-right: 2px solid #F59E0B;
+  letter-spacing: 1px;
+  user-select: none;
+}
+
+.captain-code-suffix-input {
+  font-family: 'Courier New', monospace;
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 4px;
+  color: #92400E;
+  padding: 8px 12px;
+  border: none;
+  outline: none;
+  width: 110px;
+  text-transform: uppercase;
+  background: transparent;
+}
+
+.captain-code-suffix-input::placeholder {
+  color: #CBD5E1;
+  letter-spacing: 2px;
+  font-weight: 600;
+}
+
+.captain-code-edit-buttons {
+  display: flex;
+  gap: 8px;
+}
+
 .captain-code-info {
   display: flex;
   align-items: flex-start;
@@ -6396,6 +6451,17 @@
 .captain-input-field:focus {
   border-color: var(--primary, #E06020);
   box-shadow: 0 0 0 3px rgba(224, 96, 32, 0.1);
+}
+
+.captain-select-field {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.captain-select-field option:disabled {
+  color: #94a3b8;
+  background-color: #f1f5f9;
+  font-style: italic;
 }
 
 /* No formation state */

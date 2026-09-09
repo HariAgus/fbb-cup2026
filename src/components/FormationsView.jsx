@@ -30,7 +30,9 @@ import {
   Key,
   RefreshCw,
   ClipboardCopy,
-  Lock
+  Lock,
+  Edit2,
+  X
 } from 'lucide-react';
 
 export const FormationsView = ({ initialTeamId = null, onSelectTeam = null }) => {
@@ -64,6 +66,41 @@ export const FormationsView = ({ initialTeamId = null, onSelectTeam = null }) =>
   const selectedTeam = useMemo(() => {
     return teams.find((t) => t.id === selectedTeamId) || teams[0] || null;
   }, [teams, selectedTeamId]);
+
+  // Captain Code Edit State
+  const [isEditingCode, setIsEditingCode] = useState(false);
+  const [customCodeSuffix, setCustomCodeSuffix] = useState('');
+  const [isSavingCode, setIsSavingCode] = useState(false);
+
+  useEffect(() => {
+    setIsEditingCode(false);
+    setCustomCodeSuffix('');
+  }, [selectedTeamId]);
+
+  const handleStartEditCode = () => {
+    const raw = selectedTeam?.captainCode || '';
+    const suffix = raw.replace(/^FBB-?/i, '');
+    setCustomCodeSuffix(suffix);
+    setIsEditingCode(true);
+  };
+
+  const handleSaveCustomCode = async () => {
+    const cleaned = customCodeSuffix.trim().toUpperCase();
+    if (cleaned.length !== 4) {
+      showToast('Kode harus terdiri dari 4 karakter huruf/angka setelah FBB-', 'error');
+      return;
+    }
+    setIsSavingCode(true);
+    try {
+      const fullCode = `FBB-${cleaned}`;
+      const result = await updateTeamCaptainCode(selectedTeam.id, fullCode);
+      if (result) {
+        setIsEditingCode(false);
+      }
+    } finally {
+      setIsSavingCode(false);
+    }
+  };
 
   // Skuad players for the selected team
   const teamPlayers = useMemo(() => {
@@ -605,48 +642,93 @@ export const FormationsView = ({ initialTeamId = null, onSelectTeam = null }) =>
             <div className="captain-code-header">
               <div className="captain-code-title">
                 <Key size={18} className="text-amber-500" />
-                <span>Kode Akses Kapten</span>
+                <span>Kode Akses Kapten Tim ({selectedTeam?.name})</span>
               </div>
               <span className="captain-code-subtitle">
-                Bagikan kode ini ke kapten tim agar mereka bisa mengisi detail pertandingan secara mandiri di halaman publik.
+                Bagikan kode ini ke kapten tim agar mereka bisa mengisi Babak / Match di tab "Kartu Tim". Format: <b>FBB-XXXX</b> (wajib 4 digit huruf/angka).
               </span>
             </div>
             <div className="captain-code-body">
-              <div className="captain-code-display">
-                {selectedTeam.captainCode ? (
-                  <span className="captain-code-value">{selectedTeam.captainCode}</span>
-                ) : (
-                  <span className="captain-code-empty">Belum ada kode</span>
-                )}
-              </div>
-              <div className="captain-code-actions">
-                {selectedTeam.captainCode && (
-                  <button
-                    className="btn btn-secondary text-xs font-bold"
-                    title="Salin kode ke clipboard"
-                    onClick={() => {
-                      navigator.clipboard.writeText(selectedTeam.captainCode);
-                      showToast(`Kode ${selectedTeam.captainCode} disalin!`);
-                    }}
-                  >
-                    <ClipboardCopy size={14} />
-                    <span>Salin</span>
-                  </button>
-                )}
-                <button
-                  className="btn btn-primary text-xs font-bold"
-                  title={selectedTeam.captainCode ? 'Generate kode baru (kode lama tidak berlaku)' : 'Generate kode kapten baru'}
-                  onClick={() => updateTeamCaptainCode(selectedTeam.id)}
-                >
-                  <RefreshCw size={14} />
-                  <span>{selectedTeam.captainCode ? 'Generate Ulang' : 'Generate Kode'}</span>
-                </button>
-              </div>
+              {isEditingCode ? (
+                <div className="captain-code-edit-container">
+                  <div className="captain-code-input-box">
+                    <span className="captain-code-prefix-badge">FBB-</span>
+                    <input
+                      type="text"
+                      maxLength={4}
+                      placeholder="4DIGIT"
+                      value={customCodeSuffix}
+                      onChange={(e) => setCustomCodeSuffix(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
+                      className="captain-code-suffix-input"
+                      autoFocus
+                    />
+                  </div>
+                  <div className="captain-code-edit-buttons">
+                    <button
+                      className="btn btn-primary text-xs font-bold"
+                      onClick={handleSaveCustomCode}
+                      disabled={customCodeSuffix.length !== 4 || isSavingCode}
+                    >
+                      <Check size={14} />
+                      <span>{isSavingCode ? 'Menyimpan...' : 'Simpan Kode'}</span>
+                    </button>
+                    <button
+                      className="btn btn-secondary text-xs font-bold"
+                      onClick={() => setIsEditingCode(false)}
+                      disabled={isSavingCode}
+                    >
+                      <X size={14} />
+                      <span>Batal</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="captain-code-display">
+                    {selectedTeam.captainCode ? (
+                      <span className="captain-code-value">{selectedTeam.captainCode}</span>
+                    ) : (
+                      <span className="captain-code-empty">Belum ada kode</span>
+                    )}
+                  </div>
+                  <div className="captain-code-actions">
+                    <button
+                      className="btn btn-secondary text-xs font-bold"
+                      title="Edit kode unik kapten manual"
+                      onClick={handleStartEditCode}
+                    >
+                      <Edit2 size={14} />
+                      <span>Edit Kode</span>
+                    </button>
+                    {selectedTeam.captainCode && (
+                      <button
+                        className="btn btn-secondary text-xs font-bold"
+                        title="Salin kode ke clipboard"
+                        onClick={() => {
+                          navigator.clipboard.writeText(selectedTeam.captainCode);
+                          showToast(`Kode ${selectedTeam.captainCode} disalin!`);
+                        }}
+                      >
+                        <ClipboardCopy size={14} />
+                        <span>Salin</span>
+                      </button>
+                    )}
+                    <button
+                      className="btn btn-primary text-xs font-bold"
+                      title={selectedTeam.captainCode ? 'Generate kode acak baru otomatis' : 'Generate kode kapten baru'}
+                      onClick={() => updateTeamCaptainCode(selectedTeam.id)}
+                    >
+                      <RefreshCw size={14} />
+                      <span>{selectedTeam.captainCode ? 'Generate Ulang' : 'Generate Kode'}</span>
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
-            {selectedTeam.captainCode && (
+            {selectedTeam.captainCode && !isEditingCode && (
               <div className="captain-code-info">
                 <Lock size={12} className="text-muted" />
-                <span>Kapten membuka halaman <b>publik → tab "Kartu Tim"</b> dan memasukkan kode ini untuk mengisi detail pertandingan.</span>
+                <span>Kapten membuka halaman <b>publik → tab "Kartu Tim"</b> dan memasukkan kode <b>{selectedTeam.captainCode}</b> untuk mengisi formasi.</span>
               </div>
             )}
           </div>

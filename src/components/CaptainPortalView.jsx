@@ -165,7 +165,16 @@ const renderPlayerTile = (player, slotCode) => (
 );
 
 // --- Card Detail Inputs (rich admin-style layout) ---
-const CaptainCardInput = ({ card, details, onChange, teamColor, isSemifinal }) => {
+const CaptainCardInput = ({
+  card,
+  details,
+  onChange,
+  teamColor,
+  isSemifinal,
+  usedMatches = []
+}) => {
+  const currentMatch = details.round || '';
+
   return (
     <div
       className="captain-card-item"
@@ -178,6 +187,11 @@ const CaptainCardInput = ({ card, details, onChange, teamColor, isSemifinal }) =
         </div>
         <div>
           <div className="captain-card-title">{card.cardTitle}</div>
+          {currentMatch && (
+            <div className={`card-round-tag ${isSemifinal ? 'round-semifinal' : ''}`} style={{ marginTop: '2px' }}>
+              {currentMatch}
+            </div>
+          )}
         </div>
         {isSemifinal && (
           <span className="ml-auto">
@@ -234,49 +248,33 @@ const CaptainCardInput = ({ card, details, onChange, teamColor, isSemifinal }) =
         </div>
       </div>
 
-      {/* Manual Match Detail Inputs */}
+      {/* Manual Match Detail Input - Hanya Babak / Match ke berapa */}
       <div className="captain-card-inputs">
         <div className="captain-input-group">
           <label className="captain-input-label">
             <Calendar size={13} />
             Babak / Match ke berapa:
           </label>
-          <input
-            type="text"
-            placeholder={isSemifinal ? 'Contoh: Babak Semifinal' : `Contoh: Match ke-${card.cardIndex}`}
-            value={details.round || ''}
+          <select
+            value={currentMatch}
             onChange={(e) => onChange(card.cardIndex, 'round', e.target.value)}
-            className="captain-input-field"
-          />
-        </div>
-
-        <div className="captain-input-row">
-          <div className="captain-input-group">
-            <label className="captain-input-label">
-              <MapPin size={13} />
-              Lapangan berapa:
-            </label>
-            <input
-              type="text"
-              placeholder="Contoh: Lapangan 1"
-              value={details.court || ''}
-              onChange={(e) => onChange(card.cardIndex, 'court', e.target.value)}
-              className="captain-input-field"
-            />
-          </div>
-          <div className="captain-input-group">
-            <label className="captain-input-label">
-              <Swords size={13} />
-              Lawan tim:
-            </label>
-            <input
-              type="text"
-              placeholder="Contoh: PB Garuda"
-              value={details.opponent || ''}
-              onChange={(e) => onChange(card.cardIndex, 'opponent', e.target.value)}
-              className="captain-input-field"
-            />
-          </div>
+            className="captain-input-field captain-select-field"
+          >
+            <option value="">-- Pilih Babak / Match (1 - 6) --</option>
+            {[1, 2, 3, 4, 5, 6].map((num) => {
+              const matchValue = `Match ${num}`;
+              const isUsed = usedMatches.includes(matchValue);
+              return (
+                <option
+                  key={num}
+                  value={matchValue}
+                  disabled={isUsed}
+                >
+                  {matchValue} {isUsed ? '(Sudah dipilih di kartu lain)' : ''}
+                </option>
+              );
+            })}
+          </select>
         </div>
       </div>
     </div>
@@ -396,7 +394,7 @@ export const CaptainPortalView = () => {
             📋 Portal Kartu Formasi Kapten
           </h2>
           <p className="captain-portal-hero-desc">
-            Kapten tim dapat mengisi detail pertandingan (babak, lapangan, lawan) untuk setiap kartu formasi secara mandiri menggunakan kode akses dari admin.
+            Kapten tim dapat menentukan urutan Babak / Match (Match 1 - 6) untuk setiap kartu formasi secara mandiri menggunakan kode akses dari admin.
           </p>
         </div>
         <CaptainLoginPanel teams={teams} onLogin={handleLogin} />
@@ -444,7 +442,7 @@ export const CaptainPortalView = () => {
       <div className="captain-edit-notice">
         <Info size={15} className="flex-shrink-0 text-blue-500" />
         <span>
-          Isi detail pertandingan untuk setiap kartu formasi di bawah ini, kemudian klik <b>Simpan Detail</b>. Data akan tersimpan dan bisa dilihat admin.
+          Pilih <b>Babak / Match (Match 1 s/d 6)</b> untuk setiap kartu formasi di bawah ini, lalu klik <b>Simpan Detail Pertandingan</b>. Setiap match hanya dapat dipilih pada 1 kartu formasi.
         </span>
       </div>
 
@@ -452,6 +450,11 @@ export const CaptainPortalView = () => {
         <div className="captain-cards-grid">
           {(formationData.cards || []).map((card) => {
             const isSemifinal = card.cardIndex === 6;
+            // Get all used match values on OTHER cards
+            const usedMatches = Object.entries(localCardDetails)
+              .filter(([idx, detail]) => String(idx) !== String(card.cardIndex) && Boolean(detail?.round))
+              .map(([, detail]) => detail.round);
+
             return (
               <CaptainCardInput
                 key={card.cardIndex}
@@ -460,6 +463,7 @@ export const CaptainPortalView = () => {
                 onChange={handleCardDetailChange}
                 teamColor={authenticatedTeam?.color}
                 isSemifinal={isSemifinal}
+                usedMatches={usedMatches}
               />
             );
           })}

@@ -24,6 +24,13 @@ export const TeamModal = ({ isOpen, onClose, teamToEdit = null }) => {
 
   useEffect(() => {
     if (teamToEdit) {
+      const assignedIds = new Set(teamToEdit.playerIds || []);
+      (data.players || []).forEach((p) => {
+        if (p.teamId === teamToEdit.id) {
+          assignedIds.add(p.id);
+        }
+      });
+
       setFormData({
         id: teamToEdit.id,
         name: teamToEdit.name || '',
@@ -32,7 +39,7 @@ export const TeamModal = ({ isOpen, onClose, teamToEdit = null }) => {
         phone: teamToEdit.phone || '',
         color: teamToEdit.color || '#E06020',
         logo: teamToEdit.logo || '🏸',
-        playerIds: teamToEdit.playerIds ? [...teamToEdit.playerIds] : []
+        playerIds: Array.from(assignedIds)
       });
     } else {
       setFormData({
@@ -45,7 +52,7 @@ export const TeamModal = ({ isOpen, onClose, teamToEdit = null }) => {
         playerIds: []
       });
     }
-  }, [teamToEdit, isOpen]);
+  }, [teamToEdit, isOpen, data.players]);
 
   if (!isOpen) return null;
 
