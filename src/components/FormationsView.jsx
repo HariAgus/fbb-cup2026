@@ -24,7 +24,6 @@ import {
   ArrowRight,
   Swords,
   MapPin,
-  Trophy,
   Save,
   FileSpreadsheet,
   Key,
@@ -32,8 +31,13 @@ import {
   ClipboardCopy,
   Lock,
   Edit2,
-  X
+  X,
+  Clock,
+  CalendarClock,
+  Timer,
+  AlertCircle
 } from 'lucide-react';
+import { formatDeadlineDisplay, getDeadlineTimeRemaining } from '../utils/dateUtils';
 
 export const FormationsView = ({ initialTeamId = null, onSelectTeam = null }) => {
   const {
@@ -42,6 +46,7 @@ export const FormationsView = ({ initialTeamId = null, onSelectTeam = null }) =>
     getFormationCardsForTeam,
     updateTeamFormationSlots,
     updateTeamCaptainCode,
+    updateTournamentFormationDeadline,
     showToast
   } = useTournament();
 
@@ -72,10 +77,34 @@ export const FormationsView = ({ initialTeamId = null, onSelectTeam = null }) =>
   const [customCodeSuffix, setCustomCodeSuffix] = useState('');
   const [isSavingCode, setIsSavingCode] = useState(false);
 
+  // Global Tournament Formation Deadline State
+  const globalDeadline = data.formationDeadline || selectedTeam?.formationDeadline || null;
+  const [deadlineInput, setDeadlineInput] = useState('');
+  const [isSavingDeadline, setIsSavingDeadline] = useState(false);
+
   useEffect(() => {
     setIsEditingCode(false);
     setCustomCodeSuffix('');
   }, [selectedTeamId]);
+
+  useEffect(() => {
+    if (globalDeadline) {
+      try {
+        const d = new Date(globalDeadline);
+        if (!isNaN(d.getTime())) {
+          const tzOffset = d.getTimezoneOffset() * 60000;
+          const localISO = new Date(d.getTime() - tzOffset).toISOString().slice(0, 16);
+          setDeadlineInput(localISO);
+        } else {
+          setDeadlineInput('');
+        }
+      } catch (e) {
+        setDeadlineInput('');
+      }
+    } else {
+      setDeadlineInput('');
+    }
+  }, [globalDeadline]);
 
   const handleStartEditCode = () => {
     const raw = selectedTeam?.captainCode || '';
@@ -100,6 +129,36 @@ export const FormationsView = ({ initialTeamId = null, onSelectTeam = null }) =>
     } finally {
       setIsSavingCode(false);
     }
+  };
+
+  const handleSaveDeadline = async () => {
+    setIsSavingDeadline(true);
+    try {
+      let isoDeadline = null;
+      if (deadlineInput) {
+        isoDeadline = new Date(deadlineInput).toISOString();
+      }
+      await updateTournamentFormationDeadline(isoDeadline);
+    } finally {
+      setIsSavingDeadline(false);
+    }
+  };
+
+  const handleClearDeadline = async () => {
+    setIsSavingDeadline(true);
+    try {
+      setDeadlineInput('');
+      await updateTournamentFormationDeadline(null);
+    } finally {
+      setIsSavingDeadline(false);
+    }
+  };
+
+  const handleSetQuickDeadline = (hoursToAdd) => {
+    const target = new Date(Date.now() + hoursToAdd * 60 * 60 * 1000);
+    const tzOffset = target.getTimezoneOffset() * 60000;
+    const localISO = new Date(target.getTime() - tzOffset).toISOString().slice(0, 16);
+    setDeadlineInput(localISO);
   };
 
   // Skuad players for the selected team
@@ -527,6 +586,154 @@ export const FormationsView = ({ initialTeamId = null, onSelectTeam = null }) =>
             💡 <b>Prinsip Rotasi:</b> Setiap tim menyiapkan 6 kartu formasi untuk <b>5 babak penyisihan</b> dan <b>1 babak semifinal</b>. Dalam 1 kartu, seluruh 6 pemain bermain tepat 1 kali. Pemain <b>Grade B+ hanya berpasangan dengan Grade B</b> di Partai 3.
           </div>
         </div>
+
+        {/* ⏰ Global Tournament Formation Deadline Card (Admin Only) */}
+        {isAdmin && (
+          <div className="global-deadline-admin-card glass-card">
+            <div className="global-deadline-header">
+              <div className="global-deadline-title-wrap">
+                <div className="global-deadline-icon-box">
+                  <CalendarClock size={22} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    <h3 className="global-deadline-title">
+                      Batas Waktu Input Kartu Formasi Turnamen
+                    </h3>
+                    {globalDeadline ? (
+                      (() => {
+                        const info = getDeadlineTimeRemaining(globalDeadline);
+                        return (
+                          <span
+                            className={`global-deadline-status-pill ${
+                              info.isExpired ? 'status-expired' : 'status-active'
+                            }`}
+                          >
+                            {info.isExpired ? (
+                              <>
+                                <Lock size={12} />
+                                <span>Terkunci (Batas Lewat)</span>
+                              </>
+                            ) : (
+                              <>
+                                <Clock size={12} />
+                                <span>Aktif ({info.text})</span>
+                              </>
+                            )}
+                          </span>
+                        );
+                      })()
+                    ) : (
+                      <span className="global-deadline-status-pill status-open">
+                        <span>⚪ Bebas Batas Waktu</span>
+                      </span>
+                    )}
+                  </div>
+                  <p className="global-deadline-desc">
+                    Atur batas tanggal & jam maksimal pengisian formasi untuk <b>seluruh tim peserta ({teams.length} Tim)</b>. Setelah lewat dari batas waktu, portal kapten otomatis terkunci dan tidak dapat menginput atau mengedit urutan pertandingan lagi.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="global-deadline-controls">
+              {/* Active Deadline Info Alert */}
+              {globalDeadline && (
+                <div
+                  className={`global-deadline-info-row ${
+                    getDeadlineTimeRemaining(globalDeadline).isExpired ? 'row-expired' : 'row-active'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Clock size={16} className="flex-shrink-0" />
+                    <span>
+                      Batas Pengisian Resmi: <b>{formatDeadlineDisplay(globalDeadline)}</b>
+                    </span>
+                  </div>
+                  <span className="deadline-countdown-badge">
+                    {getDeadlineTimeRemaining(globalDeadline).text}
+                  </span>
+                </div>
+              )}
+
+              {/* Input Form & Presets */}
+              <div className="global-deadline-form-grid">
+                <div className="form-group mb-0 deadline-input-col">
+                  <label className="form-label text-xs mb-1.5 font-bold flex items-center gap-1.5 text-gray-800">
+                    <Calendar size={13} className="text-primary" />
+                    <span>Set Tanggal & Jam Batas Akhir:</span>
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={deadlineInput}
+                    onChange={(e) => setDeadlineInput(e.target.value)}
+                    className="form-control text-xs font-mono font-medium deadline-datetime-input"
+                  />
+                </div>
+
+                <div className="deadline-presets-col">
+                  <span className="text-3xs text-muted font-bold block mb-1.5 uppercase tracking-wider">
+                    Pilihan Cepat (Quick Preset):
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      { label: '+1 Jam', h: 1 },
+                      { label: '+3 Jam', h: 3 },
+                      { label: '+6 Jam', h: 6 },
+                      { label: '+12 Jam', h: 12 },
+                      { label: '+1 Hari', h: 24 },
+                      { label: '+2 Hari', h: 48 },
+                      { label: '+3 Hari', h: 72 }
+                    ].map((preset) => (
+                      <button
+                        key={preset.label}
+                        type="button"
+                        onClick={() => handleSetQuickDeadline(preset.h)}
+                        className="btn btn-2xs btn-secondary preset-btn"
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="deadline-actions-col">
+                  <button
+                    type="button"
+                    onClick={handleSaveDeadline}
+                    disabled={isSavingDeadline || !deadlineInput}
+                    className="btn btn-primary text-xs font-bold w-full sm:w-auto justify-center shadow-xs"
+                  >
+                    {isSavingDeadline ? (
+                      <>
+                        <span className="animate-spin text-xs">⏳</span>
+                        <span>Menyimpan...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Save size={14} />
+                        <span>Simpan Batas Turnamen</span>
+                      </>
+                    )}
+                  </button>
+
+                  {globalDeadline && (
+                    <button
+                      type="button"
+                      onClick={handleClearDeadline}
+                      disabled={isSavingDeadline}
+                      className="btn btn-secondary text-xs font-bold text-rose-600 hover:bg-rose-50 border-rose-200"
+                      title="Hapus batas waktu (kapten bisa input kapan saja)"
+                    >
+                      <X size={14} />
+                      <span>Hapus Batas (Bebaskan)</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Team Selector & Readiness Deck */}
         <div className="team-formation-control-card">
