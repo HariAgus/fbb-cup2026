@@ -57,6 +57,47 @@ export const TournamentProvider = ({ children }) => {
     }
   }, [cloudSettings.firebase?.projectId, cloudSettings.firebase?.apiKey]);
 
+  // Helper to generate a stable deterministic captain code
+  const _genStableCaptainCode = (seed) => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let hash = 0;
+    const str = String(seed || 'team');
+    for (let i = 0; i < str.length; i++) {
+      hash = (hash * 31 + str.charCodeAt(i)) >>> 0;
+    }
+    let code = 'FBB-';
+    for (let i = 0; i < 4; i++) {
+      code += chars.charAt((hash >> (i * 5)) % chars.length);
+    }
+    return code;
+  };
+
+  // Ensure remote/incoming data never erases captain codes or formation metadata
+  const sanitizeIncomingData = (incoming, current) => {
+    if (!incoming) return incoming;
+    const currentTeamsMap = new Map((current?.teams || []).map((t) => [t.id, t]));
+
+    const sanitizedTeams = (incoming.teams || []).map((t, idx) => {
+      const localTeam = currentTeamsMap.get(t.id) || current?.teams?.[idx];
+      const stableCode = t.captainCode || localTeam?.captainCode || _genStableCaptainCode(t.id || `team-${idx + 1}`);
+      const formationDeadline = t.formationDeadline || incoming.formationDeadline || localTeam?.formationDeadline || current?.formationDeadline || null;
+      const formationCardDetails = t.formationCardDetails || localTeam?.formationCardDetails || {};
+
+      return {
+        ...t,
+        captainCode: stableCode,
+        formationDeadline,
+        formationCardDetails
+      };
+    });
+
+    return {
+      ...incoming,
+      formationDeadline: incoming.formationDeadline || current?.formationDeadline || null,
+      teams: sanitizedTeams
+    };
+  };
+
   // Real-time synchronization with Firestore (Official Cloud Data)
   useEffect(() => {
     if (cloudSettings.firebase?.projectId && cloudSettings.firebase?.apiKey) {
@@ -64,7 +105,7 @@ export const TournamentProvider = ({ children }) => {
         cloudSettings.firebase,
         (remoteData) => {
           if (remoteData && remoteData.players && remoteData.players.length > 0) {
-            setData(remoteData);
+            setData((prev) => sanitizeIncomingData(remoteData, prev));
           }
         },
         (err) => {
@@ -95,21 +136,8 @@ export const TournamentProvider = ({ children }) => {
   useEffect(() => {
     const teamsWithoutCode = (data.teams || []).filter((t) => !t.captainCode);
     if (teamsWithoutCode.length > 0) {
-      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-      const genStableCode = (teamId) => {
-        let hash = 0;
-        const str = String(teamId || 'team');
-        for (let i = 0; i < str.length; i++) {
-          hash = (hash * 31 + str.charCodeAt(i)) >>> 0;
-        }
-        let code = 'FBB-';
-        for (let i = 0; i < 4; i++) {
-          code += chars.charAt((hash >> (i * 5)) % chars.length);
-        }
-        return code;
-      };
-      const patchedTeams = (data.teams || []).map((t) =>
-        t.captainCode ? t : { ...t, captainCode: genStableCode(t.id) }
+      const patchedTeams = (data.teams || []).map((t, idx) =>
+        t.captainCode ? t : { ...t, captainCode: _genStableCaptainCode(t.id || `team-${idx + 1}`) }
       );
       const patchedData = { ...data, teams: patchedTeams };
       setData(patchedData);
@@ -654,10 +682,19 @@ export const TournamentProvider = ({ children }) => {
   const applyDrawResult = (drawnTeams, autoGenerateMatches = false) => {
     setData((prev) => {
       const teamPlayerMapping = {};
-      drawnTeams.forEach((team) => {
-        team.playerIds.forEach((pId) => {
+      const currentTeamsMap = new Map((prev.teams || []).map((t) => [t.id, t]));
+
+      const sanitizedDrawnTeams = (drawnTeams || []).map((team, idx) => {
+        const existing = currentTeamsMap.get(team.id) || prev.teams?.[idx];
+        (team.playerIds || []).forEach((pId) => {
           teamPlayerMapping[pId] = team.id;
         });
+        return {
+          ...team,
+          captainCode: team.captainCode || existing?.captainCode || _genCaptainCode(team.id || `team-${idx + 1}`),
+          formationDeadline: team.formationDeadline || existing?.formationDeadline || prev.formationDeadline || null,
+          formationCardDetails: team.formationCardDetails || existing?.formationCardDetails || {}
+        };
       });
 
       const updatedPlayers = (prev.players || []).map((p) => {
@@ -669,7 +706,7 @@ export const TournamentProvider = ({ children }) => {
 
       return {
         ...prev,
-        teams: drawnTeams,
+        teams: sanitizedDrawnTeams,
         players: updatedPlayers
       };
     });
@@ -706,8 +743,9 @@ export const TournamentProvider = ({ children }) => {
   };
 
   const addTeam = (team) => {
+    const tempId = `team-${Date.now()}`;
     const newTeam = {
-      id: `team-${Date.now()}`,
+      id: tempId,
       name: team.name || 'PB Garuda',
       shortName: team.shortName || team.name?.substring(0, 3).toUpperCase() || 'TIM',
       captain: team.captain || '-',
@@ -715,7 +753,9 @@ export const TournamentProvider = ({ children }) => {
       color: team.color || '#E06020',
       logo: team.logo || '🏸',
       playerIds: team.playerIds || [],
-      captainCode: team.captainCode || _genCaptainCode()
+      captainCode: team.captainCode || _genCaptainCode(tempId),
+      formationDeadline: team.formationDeadline || data.formationDeadline || null,
+      formationCardDetails: team.formationCardDetails || {}
     };
 
     setData((prev) => {
@@ -750,7 +790,18 @@ export const TournamentProvider = ({ children }) => {
 
       return {
         ...prev,
-        teams: prev.teams.map((t) => (t.id === updatedTeam.id ? updatedTeam : t)),
+        teams: prev.teams.map((t) => {
+          if (t.id === updatedTeam.id) {
+            return {
+              ...t,
+              ...updatedTeam,
+              captainCode: updatedTeam.captainCode || t.captainCode || _genCaptainCode(t.id),
+              formationDeadline: updatedTeam.formationDeadline || t.formationDeadline || prev.formationDeadline || null,
+              formationCardDetails: updatedTeam.formationCardDetails || t.formationCardDetails || {}
+            };
+          }
+          return t;
+        }),
         players: updatedPlayers
       };
     });
@@ -1243,7 +1294,7 @@ export const TournamentProvider = ({ children }) => {
       setSyncLoading(true);
       const fetchedData = await syncWithGoogleSheets(cloudSettings.googleSheets.webAppUrl);
       if (fetchedData && fetchedData.teams) {
-        setData(fetchedData);
+        setData((prev) => sanitizeIncomingData(fetchedData, prev));
         showToast('Data turnamen badminton berhasil diambil dari Google Sheets!');
         return true;
       } else {
@@ -1281,7 +1332,7 @@ export const TournamentProvider = ({ children }) => {
       setSyncLoading(true);
       const fetchedData = await syncWithFirebase(cloudSettings.firebase);
       if (fetchedData && fetchedData.teams) {
-        setData(fetchedData);
+        setData((prev) => sanitizeIncomingData(fetchedData, prev));
         showToast('Data turnamen badminton berhasil diambil dari Firebase Firestore!');
         return true;
       }
@@ -1313,7 +1364,7 @@ export const TournamentProvider = ({ children }) => {
     try {
       const parsed = JSON.parse(jsonString);
       if (parsed.teams && parsed.players) {
-        setData(parsed);
+        setData((prev) => sanitizeIncomingData(parsed, prev));
         showToast('Data turnamen badminton berhasil diimport!');
         return true;
       } else {

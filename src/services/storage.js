@@ -148,6 +148,23 @@ export const loadTournamentData = () => {
     if (!parsed.players || parsed.players.length === 0) {
       return initialTournamentData;
     }
+    // Guarantee captainCode is present on all teams
+    if (parsed.teams && Array.isArray(parsed.teams)) {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      parsed.teams = parsed.teams.map((t, idx) => {
+        if (t.captainCode) return t;
+        let hash = 0;
+        const str = String(t.id || `team-${idx + 1}`);
+        for (let i = 0; i < str.length; i++) {
+          hash = (hash * 31 + str.charCodeAt(i)) >>> 0;
+        }
+        let code = 'FBB-';
+        for (let i = 0; i < 4; i++) {
+          code += chars.charAt((hash >> (i * 5)) % chars.length);
+        }
+        return { ...t, captainCode: code };
+      });
+    }
     return parsed;
   } catch (err) {
     return initialTournamentData;
