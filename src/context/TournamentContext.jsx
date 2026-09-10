@@ -96,15 +96,20 @@ export const TournamentProvider = ({ children }) => {
     const teamsWithoutCode = (data.teams || []).filter((t) => !t.captainCode);
     if (teamsWithoutCode.length > 0) {
       const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-      const genCode = () => {
+      const genStableCode = (teamId) => {
+        let hash = 0;
+        const str = String(teamId || 'team');
+        for (let i = 0; i < str.length; i++) {
+          hash = (hash * 31 + str.charCodeAt(i)) >>> 0;
+        }
         let code = 'FBB-';
         for (let i = 0; i < 4; i++) {
-          code += chars.charAt(Math.floor(Math.random() * chars.length));
+          code += chars.charAt((hash >> (i * 5)) % chars.length);
         }
         return code;
       };
       const patchedTeams = (data.teams || []).map((t) =>
-        t.captainCode ? t : { ...t, captainCode: genCode() }
+        t.captainCode ? t : { ...t, captainCode: genStableCode(t.id) }
       );
       const patchedData = { ...data, teams: patchedTeams };
       setData(patchedData);
@@ -116,7 +121,7 @@ export const TournamentProvider = ({ children }) => {
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [data.teams]);
 
   const showToast = (message, type = 'success') => {
     setNotification({ message, type, id: Date.now() });
@@ -589,7 +594,10 @@ export const TournamentProvider = ({ children }) => {
         phone: existingTeam?.phone || '',
         color: preset.color || '#E06020',
         logo: preset.logo || '🏸',
-        playerIds: []
+        playerIds: [],
+        captainCode: existingTeam?.captainCode || preset.captainCode || _genCaptainCode(existingTeam?.id || `team-${i + 1}`),
+        formationDeadline: existingTeam?.formationDeadline || data.formationDeadline || null,
+        formationCardDetails: existingTeam?.formationCardDetails || {}
       });
     }
 
@@ -675,10 +683,21 @@ export const TournamentProvider = ({ children }) => {
     showToast(`Hasil pengocokan pembagian ${drawnTeams.length} tim berhasil diterapkan!`, 'success');
   };
 
-  // ---------------- TEAM ACTIONS ----------------
-  // Helper to generate a random captain access code (e.g. FBB-A3X9)
-  const _genCaptainCode = () => {
+  // Helper to generate a stable or random captain access code (e.g. FBB-A3X9)
+  const _genCaptainCode = (seed = null) => {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    if (seed) {
+      let hash = 0;
+      const str = String(seed);
+      for (let i = 0; i < str.length; i++) {
+        hash = (hash * 31 + str.charCodeAt(i)) >>> 0;
+      }
+      let code = 'FBB-';
+      for (let i = 0; i < 4; i++) {
+        code += chars.charAt((hash >> (i * 5)) % chars.length);
+      }
+      return code;
+    }
     let code = 'FBB-';
     for (let i = 0; i < 4; i++) {
       code += chars.charAt(Math.floor(Math.random() * chars.length));

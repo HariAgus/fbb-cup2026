@@ -39,7 +39,10 @@ export const TeamModal = ({ isOpen, onClose, teamToEdit = null }) => {
         phone: teamToEdit.phone || '',
         color: teamToEdit.color || '#E06020',
         logo: teamToEdit.logo || '🏸',
-        playerIds: Array.from(assignedIds)
+        playerIds: Array.from(assignedIds),
+        captainCode: teamToEdit.captainCode || '',
+        formationDeadline: teamToEdit.formationDeadline || null,
+        formationCardDetails: teamToEdit.formationCardDetails || {}
       });
     } else {
       setFormData({
@@ -49,7 +52,10 @@ export const TeamModal = ({ isOpen, onClose, teamToEdit = null }) => {
         phone: '',
         color: '#E06020',
         logo: '🏸',
-        playerIds: []
+        playerIds: [],
+        captainCode: '',
+        formationDeadline: null,
+        formationCardDetails: {}
       });
     }
   }, [teamToEdit, isOpen, data.players]);
