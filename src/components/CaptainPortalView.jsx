@@ -366,6 +366,8 @@ const CaptainCardInput = ({
   );
 };
 
+const CAPTAIN_PORTAL_SESSION_KEY = 'fbb_captain_portal_session_v1';
+
 // --- Main Captain Portal View ---
 export const CaptainPortalView = () => {
   const {
@@ -378,8 +380,32 @@ export const CaptainPortalView = () => {
   const teams = useMemo(() => data.teams || [], [data.teams]);
   const allPlayers = useMemo(() => data.players || [], [data.players]);
 
-  const [authenticatedTeamId, setAuthenticatedTeamId] = useState(null);
-  const [captainCode, setCaptainCode] = useState('');
+  const [authenticatedTeamId, setAuthenticatedTeamId] = useState(() => {
+    try {
+      const saved = localStorage.getItem(CAPTAIN_PORTAL_SESSION_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return parsed.teamId || null;
+      }
+    } catch {
+      // ignore
+    }
+    return null;
+  });
+
+  const [captainCode, setCaptainCode] = useState(() => {
+    try {
+      const saved = localStorage.getItem(CAPTAIN_PORTAL_SESSION_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return parsed.code || '';
+      }
+    } catch {
+      // ignore
+    }
+    return '';
+  });
+
   const [isSaved, setIsSaved] = useState(false);
   const [copiedCardIndex, setCopiedCardIndex] = useState(null);
   const [copiedAllCards, setCopiedAllCards] = useState(false);
@@ -410,6 +436,28 @@ export const CaptainPortalView = () => {
     return getFormationCardsForTeam(authenticatedTeam);
   }, [authenticatedTeam, getFormationCardsForTeam]);
 
+  // Keep captain session valid and in sync if team codes update
+  useEffect(() => {
+    if (authenticatedTeamId && teams.length > 0) {
+      const team = teams.find((t) => t.id === authenticatedTeamId);
+      if (!team) {
+        handleLogout();
+      } else if (team.captainCode && captainCode) {
+        if (team.captainCode.toUpperCase() !== captainCode.toUpperCase()) {
+          setCaptainCode(team.captainCode);
+          try {
+            localStorage.setItem(
+              CAPTAIN_PORTAL_SESSION_KEY,
+              JSON.stringify({ teamId: authenticatedTeamId, code: team.captainCode })
+            );
+          } catch {
+            // ignore
+          }
+        }
+      }
+    }
+  }, [teams, authenticatedTeamId, captainCode]);
+
   useEffect(() => {
     if (authenticatedTeam) {
       const saved = authenticatedTeam.formationCardDetails || {};
@@ -428,9 +476,18 @@ export const CaptainPortalView = () => {
   const handleLogin = (teamId, code) => {
     const team = teams.find((t) => t.id === teamId);
     if (!team || !team.captainCode) return false;
-    if (team.captainCode.toUpperCase() !== code.toUpperCase()) return false;
+    const cleanCode = code.trim().toUpperCase();
+    if (team.captainCode.toUpperCase() !== cleanCode) return false;
     setAuthenticatedTeamId(teamId);
-    setCaptainCode(code);
+    setCaptainCode(cleanCode);
+    try {
+      localStorage.setItem(
+        CAPTAIN_PORTAL_SESSION_KEY,
+        JSON.stringify({ teamId, code: cleanCode })
+      );
+    } catch {
+      // ignore
+    }
     return true;
   };
 
@@ -438,6 +495,11 @@ export const CaptainPortalView = () => {
     setAuthenticatedTeamId(null);
     setCaptainCode('');
     setIsSaved(false);
+    try {
+      localStorage.removeItem(CAPTAIN_PORTAL_SESSION_KEY);
+    } catch {
+      // ignore
+    }
   };
 
   const handleCardDetailChange = (cardIndex, field, value) => {
