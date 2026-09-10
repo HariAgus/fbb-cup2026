@@ -180,14 +180,14 @@ export const FormationsView = ({ initialTeamId = null, onSelectTeam = null }) =>
   });
 
   // Local round labels state
-  // Local round labels state
+
   const [roundLabels, setRoundLabels] = useState({
-    kartu1: 'Match 1',
-    kartu2: 'Match 2',
-    kartu3: 'Match 3',
-    kartu4: 'Match 4',
-    kartu5: 'Match 5',
-    kartu6: 'Match 6'
+    kartu1: 'Babak Penyisihan 1',
+    kartu2: 'Babak Penyisihan 2',
+    kartu3: 'Babak Penyisihan 3',
+    kartu4: 'Babak Penyisihan 4',
+    kartu5: 'Babak Penyisihan 5',
+    kartu6: 'Babak Semifinal'
   });
 
   // Detail pertandingan manual per Kartu (Babak, Lapangan, Lawan Tim)
