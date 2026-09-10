@@ -182,12 +182,12 @@ export const FormationsView = ({ initialTeamId = null, onSelectTeam = null }) =>
   // Local round labels state
   // Local round labels state
   const [roundLabels, setRoundLabels] = useState({
-    kartu1: 'Babak Penyisihan 1',
-    kartu2: 'Babak Penyisihan 2',
-    kartu3: 'Babak Penyisihan 3',
-    kartu4: 'Babak Penyisihan 4',
-    kartu5: 'Babak Penyisihan 5',
-    kartu6: 'Babak Semifinal'
+    kartu1: 'Match 1',
+    kartu2: 'Match 2',
+    kartu3: 'Match 3',
+    kartu4: 'Match 4',
+    kartu5: 'Match 5',
+    kartu6: 'Match 6'
   });
 
   // Detail pertandingan manual per Kartu (Babak, Lapangan, Lawan Tim)
@@ -319,10 +319,69 @@ export const FormationsView = ({ initialTeamId = null, onSelectTeam = null }) =>
     showToast('Slot pemain berhasil diisi otomatis: P1-P2 (Grade A), P3 (Grade B+), P4-P5 (Grade B), P6 (Grade C)!', 'success');
   };
 
+  // Round options for Babak Penyisihan (1 - 6)
+  const ROUND_OPTIONS = [
+    'Babak Penyisihan 1',
+    'Babak Penyisihan 2',
+    'Babak Penyisihan 3',
+    'Babak Penyisihan 4',
+    'Babak Penyisihan 5',
+    'Babak Semifinal'
+  ];
+
+  // Court options (Lapangan 1 - 6)
+  const COURT_OPTIONS = [
+    'Lapangan 1',
+    'Lapangan 2',
+    'Lapangan 3',
+    'Lapangan 4',
+    'Lapangan 5',
+    'Lapangan 6'
+  ];
+
+  // Opponent teams: All teams in tournament except current selected team
+  const opponentTeams = useMemo(() => {
+    if (!selectedTeam) return [];
+    return teams.filter((t) => t.id !== selectedTeam.id);
+  }, [teams, selectedTeam]);
+
+  // Helper to get already selected rounds in other cards (cannot be duplicated)
+  const getUsedRounds = (currentCardIndex) => {
+    const used = [];
+    Object.entries(cardDetails).forEach(([idx, det]) => {
+      if (Number(idx) !== Number(currentCardIndex) && det?.round) {
+        used.push(det.round);
+      }
+    });
+    return used;
+  };
+
+  // Helper to get already selected opponents in other cards (cannot be duplicated)
+  const getUsedOpponents = (currentCardIndex) => {
+    const used = [];
+    Object.entries(cardDetails).forEach(([idx, det]) => {
+      if (Number(idx) !== Number(currentCardIndex) && det?.opponent) {
+        used.push(det.opponent);
+      }
+    });
+    return used;
+  };
+
+  // Saving state for formation cards & database sync
+  const [isSavingCards, setIsSavingCards] = useState(false);
+  const [isSavedCards, setIsSavedCards] = useState(false);
+
   // Save all slots and manual card details to database
-  const handleSaveAll = () => {
+  const handleSaveAll = async () => {
     if (!selectedTeam) return;
-    updateTeamFormationSlots(selectedTeam.id, slotAssignments, roundLabels, null, null, cardDetails);
+    setIsSavingCards(true);
+    try {
+      await updateTeamFormationSlots(selectedTeam.id, slotAssignments, roundLabels, null, null, cardDetails);
+      setIsSavedCards(true);
+      setTimeout(() => setIsSavedCards(false), 3000);
+    } finally {
+      setIsSavingCards(false);
+    }
   };
   const handleSaveSlots = handleSaveAll;
 
@@ -605,9 +664,8 @@ export const FormationsView = ({ initialTeamId = null, onSelectTeam = null }) =>
                         const info = getDeadlineTimeRemaining(globalDeadline);
                         return (
                           <span
-                            className={`global-deadline-status-pill ${
-                              info.isExpired ? 'status-expired' : 'status-active'
-                            }`}
+                            className={`global-deadline-status-pill ${info.isExpired ? 'status-expired' : 'status-active'
+                              }`}
                           >
                             {info.isExpired ? (
                               <>
@@ -640,9 +698,8 @@ export const FormationsView = ({ initialTeamId = null, onSelectTeam = null }) =>
               {/* Active Deadline Info Alert */}
               {globalDeadline && (
                 <div
-                  className={`global-deadline-info-row ${
-                    getDeadlineTimeRemaining(globalDeadline).isExpired ? 'row-expired' : 'row-active'
-                  }`}
+                  className={`global-deadline-info-row ${getDeadlineTimeRemaining(globalDeadline).isExpired ? 'row-expired' : 'row-active'
+                    }`}
                 >
                   <div className="flex items-center gap-2">
                     <Clock size={16} className="flex-shrink-0" />
@@ -1217,6 +1274,7 @@ export const FormationsView = ({ initialTeamId = null, onSelectTeam = null }) =>
             </div>
 
             <div className="cards-deck-actions">
+
               <button
                 type="button"
                 onClick={handleCopyWhatsApp}
@@ -1230,7 +1288,7 @@ export const FormationsView = ({ initialTeamId = null, onSelectTeam = null }) =>
                 type="button"
                 onClick={handleDownloadPDF}
                 disabled={isExportingPDF}
-                className="btn btn-primary font-bold text-xs"
+                className="btn btn-secondary font-bold text-xs"
                 title="Unduh 6 kartu formasi langsung sebagai file PDF"
               >
                 {isExportingPDF ? (
@@ -1253,6 +1311,8 @@ export const FormationsView = ({ initialTeamId = null, onSelectTeam = null }) =>
               const isCopied = copiedCardIndex === card.cardIndex;
               const isSemifinal = card.cardIndex === 6;
               const details = cardDetails[card.cardIndex] || {};
+              const usedRounds = getUsedRounds(card.cardIndex);
+              const usedOpponents = getUsedOpponents(card.cardIndex);
 
               return (
                 <div
@@ -1287,40 +1347,94 @@ export const FormationsView = ({ initialTeamId = null, onSelectTeam = null }) =>
                     </button>
                   </div>
 
-                  {/* 📝 Input Manual Detail Pertandingan untuk Setiap Kartu */}
+                  {/* 📝 Input Dropdown Detail Pertandingan untuk Setiap Kartu */}
                   <div className="card-manual-meta-inputs">
+                    {/* 1. Babak Penyisihan 1 - 6 (Tidak Bisa Sama Datanya) */}
                     <div className="card-meta-input-group">
                       <label className="card-meta-label">1. Dimainkan babak penyisihan / match ke berapa:</label>
-                      <input
-                        type="text"
-                        placeholder={isSemifinal ? 'Babak Semifinal' : `Babak Penyisihan ${card.cardIndex}`}
-                        value={details.round || ''}
-                        onChange={(e) => handleUpdateCardDetail(card.cardIndex, 'round', e.target.value)}
-                        className="card-meta-text-input"
-                      />
+                      <div className="card-select-wrapper">
+                        <select
+                          value={details.round || ''}
+                          onChange={(e) => handleUpdateCardDetail(card.cardIndex, 'round', e.target.value)}
+                          className="card-meta-select-input"
+                        >
+                          <option value="">-- Pilih Babak Penyisihan (1 - 6) --</option>
+                          {ROUND_OPTIONS.map((roundOpt) => {
+                            const isUsed = usedRounds.includes(roundOpt);
+                            return (
+                              <option
+                                key={roundOpt}
+                                value={roundOpt}
+                                disabled={isUsed && details.round !== roundOpt}
+                              >
+                                {roundOpt} {isUsed && details.round !== roundOpt ? '(Sudah Dipilih di Kartu Lain)' : ''}
+                              </option>
+                            );
+                          })}
+                          {details.round && !ROUND_OPTIONS.includes(details.round) && (
+                            <option value={details.round}>{details.round}</option>
+                          )}
+                        </select>
+                        <ChevronDown size={14} className="card-select-arrow" />
+                      </div>
                     </div>
 
                     <div className="card-meta-input-row">
+                      {/* 2. Lapangan 1 - 6 (Bisa Sama Datanya) */}
                       <div className="card-meta-input-group">
                         <label className="card-meta-label">2. Lapangan berapa:</label>
-                        <input
-                          type="text"
-                          placeholder="Contoh: Lapangan 1"
-                          value={details.court || ''}
-                          onChange={(e) => handleUpdateCardDetail(card.cardIndex, 'court', e.target.value)}
-                          className="card-meta-text-input"
-                        />
+                        <div className="card-select-wrapper">
+                          <select
+                            value={details.court || ''}
+                            onChange={(e) => handleUpdateCardDetail(card.cardIndex, 'court', e.target.value)}
+                            className="card-meta-select-input"
+                          >
+                            <option value="">-- Pilih Lapangan (1 - 6) --</option>
+                            {COURT_OPTIONS.map((courtOpt) => (
+                              <option key={courtOpt} value={courtOpt}>
+                                {courtOpt}
+                              </option>
+                            ))}
+                            {details.court && !COURT_OPTIONS.includes(details.court) && (
+                              <option value={details.court}>{details.court}</option>
+                            )}
+                          </select>
+                          <ChevronDown size={14} className="card-select-arrow" />
+                        </div>
                       </div>
 
+                      {/* 3. Lawan Team Siapa (Dari Data Tim Lain, Tidak Bisa Sama Datanya) */}
                       <div className="card-meta-input-group">
                         <label className="card-meta-label">3. Lawan team siapa:</label>
-                        <input
-                          type="text"
-                          placeholder="Contoh: Tim Garuda"
-                          value={details.opponent || ''}
-                          onChange={(e) => handleUpdateCardDetail(card.cardIndex, 'opponent', e.target.value)}
-                          className="card-meta-text-input"
-                        />
+                        <div className="card-select-wrapper">
+                          <select
+                            value={details.opponent || ''}
+                            onChange={(e) => handleUpdateCardDetail(card.cardIndex, 'opponent', e.target.value)}
+                            className="card-meta-select-input"
+                          >
+                            <option value="">-- Pilih Lawan Tim --</option>
+                            {opponentTeams.length === 0 ? (
+                              <option value="" disabled>(Belum ada tim lawan terdaftar)</option>
+                            ) : (
+                              opponentTeams.map((oppTeam) => {
+                                const isUsed = usedOpponents.includes(oppTeam.name);
+                                return (
+                                  <option
+                                    key={oppTeam.id}
+                                    value={oppTeam.name}
+                                    disabled={isUsed && details.opponent !== oppTeam.name}
+                                  >
+                                    {oppTeam.name} ({oppTeam.shortName || 'PB'}) {isUsed && details.opponent !== oppTeam.name ? '(Sudah Dipilih)' : ''}
+                                  </option>
+                                );
+                              })
+                            )}
+                            {details.opponent && !opponentTeams.some((t) => t.name === details.opponent) && (
+                              <option value={details.opponent}>{details.opponent}</option>
+                            )}
+                          </select>
+                          <ChevronDown size={14} className="card-select-arrow" />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1396,6 +1510,36 @@ export const FormationsView = ({ initialTeamId = null, onSelectTeam = null }) =>
               );
             })}
           </div>
+
+          {/* Bottom Action Bar for Admin convenience */}
+          {isAdmin && (
+            <div className="cards-deck-bottom-actions">
+              <button
+                type="button"
+                onClick={handleSaveAll}
+                disabled={isSavingCards}
+                className="btn btn-primary font-bold text-sm py-2.5 px-6 shadow-md"
+                title="Simpan seluruh susunan 6 kartu formasi dan detail pertandingan langsung ke database"
+              >
+                {isSavingCards ? (
+                  <>
+                    <span className="animate-spin text-base">⏳</span>
+                    <span>Menyimpan ke Database...</span>
+                  </>
+                ) : isSavedCards ? (
+                  <>
+                    <Check size={18} className="text-white" />
+                    <span>Seluruh Kartu Berhasil Disimpan ke Database ✓</span>
+                  </>
+                ) : (
+                  <>
+                    <Save size={18} />
+                    <span>Simpan Seluruh Kartu Formasi ke Database</span>
+                  </>
+                )}
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
