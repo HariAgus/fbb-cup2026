@@ -5378,23 +5378,60 @@
   letter-spacing: 0.01em;
 }
 
-.card-meta-text-input {
+.card-select-wrapper {
+  position: relative;
   width: 100%;
-  padding: 6px 10px;
+}
+
+.card-meta-text-input,
+.card-meta-select-input {
+  width: 100%;
+  padding: 7px 28px 7px 10px;
   font-size: 0.80rem;
   font-weight: 600;
   color: #0F172A;
   background: #FFFFFF;
-  border: 1px solid #CBD5E1;
+  border: 1.5px solid #CBD5E1;
   border-radius: 6px;
   outline: none;
   transition: all 0.15s ease;
+  appearance: none;
+  cursor: pointer;
 }
 
+.card-meta-text-input {
+  padding-right: 10px;
+  cursor: text;
+}
+
+.card-meta-select-input:focus,
 .card-meta-text-input:focus {
   background: #FFFFFF;
   border-color: #EA580C;
   box-shadow: 0 0 0 2px rgba(234, 88, 12, 0.15);
+}
+
+.card-meta-select-input option:disabled {
+  color: #94A3B8;
+  background: #F8FAFC;
+}
+
+.card-select-arrow {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #64748B;
+}
+
+.cards-deck-bottom-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 24px;
+  padding: 16px 0 8px 0;
+  border-top: 1px dashed #CBD5E1;
 }
 
 .card-meta-text-input::placeholder {

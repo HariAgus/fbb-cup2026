@@ -848,24 +848,34 @@ export const TournamentProvider = ({ children }) => {
     showToast('Pemain dikeluarkan dari tim.');
   };
 
-  const updateTeamFormationSlots = (teamId, formationSlots, formationRounds = null, formationMatchPlans = null, formationPrintInfo = null, formationCardDetails = null) => {
-    setData((prev) => ({
-      ...prev,
-      teams: (prev.teams || []).map((t) => {
-        if (t.id === teamId) {
-          return {
-            ...t,
-            formationSlots: formationSlots || t.formationSlots,
-            formationRounds: formationRounds || t.formationRounds,
-            formationMatchPlans: formationMatchPlans !== null ? formationMatchPlans : t.formationMatchPlans,
-            formationPrintInfo: formationPrintInfo !== null ? formationPrintInfo : t.formationPrintInfo,
-            formationCardDetails: formationCardDetails !== null ? formationCardDetails : t.formationCardDetails
-          };
-        }
-        return t;
-      })
-    }));
-    showToast('Konfigurasi kartu formasi berhasil disimpan!');
+  const updateTeamFormationSlots = async (teamId, formationSlots, formationRounds = null, formationMatchPlans = null, formationPrintInfo = null, formationCardDetails = null) => {
+    const updatedTeams = (data.teams || []).map((t) => {
+      if (t.id === teamId) {
+        return {
+          ...t,
+          formationSlots: formationSlots || t.formationSlots,
+          formationRounds: formationRounds || t.formationRounds,
+          formationMatchPlans: formationMatchPlans !== null ? formationMatchPlans : t.formationMatchPlans,
+          formationPrintInfo: formationPrintInfo !== null ? formationPrintInfo : t.formationPrintInfo,
+          formationCardDetails: formationCardDetails !== null ? formationCardDetails : t.formationCardDetails
+        };
+      }
+      return t;
+    });
+    const updatedData = { ...data, teams: updatedTeams };
+    setData(updatedData);
+
+    if (cloudSettings?.firebase?.projectId && cloudSettings?.firebase?.apiKey) {
+      try {
+        await syncWithFirebase(cloudSettings.firebase, updatedData);
+        showToast('Formasi & detail kartu berhasil disimpan ke Database Cloud Firebase!', 'success');
+      } catch (err) {
+        showToast(`Formasi tersimpan di lokal (Sync Database Firebase: ${err.message})`, 'warning');
+      }
+    } else {
+      showToast('Formasi & detail kartu berhasil disimpan ke database!', 'success');
+    }
+    return true;
   };
 
   // Admin: set or regenerate captain code for a team, then immediately sync to Firebase

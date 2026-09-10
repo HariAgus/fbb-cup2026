@@ -77,9 +77,8 @@ const CaptainLoginPanel = ({ teams, onLogin, globalDeadline = null }) => {
         {/* Global Deadline Info on Login Screen */}
         {deadline && (
           <div
-            className={`captain-login-deadline-card ${
-              deadlineInfo.isExpired ? 'deadline-locked' : 'deadline-active'
-            }`}
+            className={`captain-login-deadline-card ${deadlineInfo.isExpired ? 'deadline-locked' : 'deadline-active'
+              }`}
           >
             <div className="captain-login-deadline-icon">
               {deadlineInfo.isExpired ? <Lock size={18} /> : <Clock size={18} />}
@@ -90,9 +89,8 @@ const CaptainLoginPanel = ({ teams, onLogin, globalDeadline = null }) => {
                   {deadlineInfo.isExpired ? 'Batas Waktu Pengisian Ditutup' : 'Batas Waktu Input Formasi'}
                 </span>
                 <span
-                  className={`captain-login-deadline-badge ${
-                    deadlineInfo.isExpired ? 'badge-locked' : 'badge-active'
-                  }`}
+                  className={`captain-login-deadline-badge ${deadlineInfo.isExpired ? 'badge-locked' : 'badge-active'
+                    }`}
                 >
                   {deadlineInfo.isExpired ? '🔒 Terkunci' : '⏰ Aktif'}
                 </span>
@@ -214,6 +212,24 @@ const renderPlayerTile = (player, slotCode) => (
   </div>
 );
 
+const ROUND_OPTIONS = [
+  'Babak Penyisihan 1',
+  'Babak Penyisihan 2',
+  'Babak Penyisihan 3',
+  'Babak Penyisihan 4',
+  'Babak Penyisihan 5',
+  'Babak Semifinal'
+];
+
+const COURT_OPTIONS = [
+  'Lapangan 1',
+  'Lapangan 2',
+  'Lapangan 3',
+  'Lapangan 4',
+  'Lapangan 5',
+  'Lapangan 6'
+];
+
 // --- Card Detail Inputs (rich admin-style layout) ---
 const CaptainCardInput = ({
   card,
@@ -223,12 +239,16 @@ const CaptainCardInput = ({
   teamName,
   captainName,
   isSemifinal,
-  usedMatches = [],
+  usedRounds = [],
+  usedOpponents = [],
+  opponentTeams = [],
   isExpired = false,
   onCopySingle = null,
   isCopied = false
 }) => {
   const currentMatch = details.round || '';
+  const currentCourt = details.court || '';
+  const currentOpponent = details.opponent || '';
 
   return (
     <div
@@ -245,7 +265,7 @@ const CaptainCardInput = ({
             <div className="captain-card-title">{card.cardTitle}</div>
             {currentMatch ? (
               <div className="card-round-tag round-assigned" style={{ marginTop: '2px' }}>
-                🎯 {currentMatch}
+                🎯 {currentMatch} {currentCourt ? `• ${currentCourt}` : ''} {currentOpponent ? `• vs ${currentOpponent}` : ''}
               </div>
             ) : (
               <div className="card-round-tag round-unassigned" style={{ marginTop: '2px' }}>
@@ -318,47 +338,57 @@ const CaptainCardInput = ({
       {/* Match Detail Section */}
       <div className="captain-card-inputs">
         {isExpired ? (
-          <div className="p-2.5 bg-gray-50/90 rounded-xl border border-gray-200/80 flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-xs text-gray-600 font-medium">
-              <Calendar size={13} className="text-gray-500" />
-              <span>Jadwal Babak / Match:</span>
+          <div className="p-2.5 bg-gray-50/90 rounded-xl border border-gray-200/80 flex flex-col gap-1.5 text-xs text-gray-700">
+            <div className="flex items-center justify-between">
+              <span className="font-semibold text-gray-500">1. Babak / Match:</span>
+              <span className="font-extrabold text-emerald-800 bg-emerald-100/90 px-2 py-0.5 rounded">
+                {currentMatch || 'Belum Ditentukan'}
+              </span>
             </div>
-            {currentMatch ? (
-              <span className="font-extrabold text-xs text-emerald-800 bg-emerald-100/90 border border-emerald-200 px-2.5 py-0.5 rounded-md">
-                🎯 {currentMatch}
+            <div className="flex items-center justify-between">
+              <span className="font-semibold text-gray-500">2. Lapangan:</span>
+              <span className="font-extrabold text-blue-800 bg-blue-100/90 px-2 py-0.5 rounded">
+                {currentCourt || 'Belum Ditentukan'}
               </span>
-            ) : (
-              <span className="text-2xs text-gray-500 italic font-medium bg-gray-200/70 px-2 py-0.5 rounded">
-                Belum Ditentukan
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="font-semibold text-gray-500">3. Lawan:</span>
+              <span className="font-extrabold text-purple-800 bg-purple-100/90 px-2 py-0.5 rounded">
+                {currentOpponent || 'Belum Ditentukan'}
               </span>
-            )}
+            </div>
           </div>
         ) : (
-          <div className="captain-input-group">
-            <label className="captain-input-label">
-              <Calendar size={13} />
-              Babak / Match ke berapa:
-            </label>
-            <select
-              value={currentMatch}
-              onChange={(e) => onChange(card.cardIndex, 'round', e.target.value)}
-              className="captain-input-field captain-select-field"
-            >
-              <option value="">-- Pilih Babak / Match (1 - 6) --</option>
-              {[1, 2, 3, 4, 5, 6].map((num) => {
-                const matchValue = `Match ${num}`;
-                const isUsed = usedMatches.includes(matchValue);
-                return (
-                  <option
-                    key={num}
-                    value={matchValue}
-                    disabled={isUsed}
-                  >
-                    {matchValue} {isUsed ? '(Sudah dipilih di kartu lain)' : ''}
-                  </option>
-                );
-              })}
-            </select>
+          <div className="flex flex-col gap-2.5">
+            {/* 1. Babak Dropdown */}
+            <div className="captain-input-group">
+              <label className="captain-input-label">
+                <Calendar size={13} />
+                1. Dimainkan babak penyisihan / match ke berapa:
+              </label>
+              <select
+                value={currentMatch}
+                onChange={(e) => onChange(card.cardIndex, 'round', e.target.value)}
+                className="captain-input-field captain-select-field"
+              >
+                <option value="">-- Pilih Babak Penyisihan (1 - 6) --</option>
+                {ROUND_OPTIONS.map((opt) => {
+                  const isUsed = usedRounds.includes(opt);
+                  return (
+                    <option
+                      key={opt}
+                      value={opt}
+                      disabled={isUsed && currentMatch !== opt}
+                    >
+                      {opt} {isUsed && currentMatch !== opt ? '(Sudah Dipilih)' : ''}
+                    </option>
+                  );
+                })}
+                {currentMatch && !ROUND_OPTIONS.includes(currentMatch) && (
+                  <option value={currentMatch}>{currentMatch}</option>
+                )}
+              </select>
+            </div>
           </div>
         )}
       </div>
@@ -435,6 +465,11 @@ export const CaptainPortalView = () => {
     if (!authenticatedTeam) return null;
     return getFormationCardsForTeam(authenticatedTeam);
   }, [authenticatedTeam, getFormationCardsForTeam]);
+
+  const opponentTeams = useMemo(() => {
+    if (!authenticatedTeam) return [];
+    return teams.filter((t) => t.id !== authenticatedTeam.id);
+  }, [teams, authenticatedTeam]);
 
   // Keep captain session valid and in sync if team codes update
   useEffect(() => {
@@ -654,9 +689,8 @@ export const CaptainPortalView = () => {
               <span className="captain-auth-team-name">{authenticatedTeam?.name}</span>
               <span className="team-code-tag">{authenticatedTeam?.shortName || 'PB'}</span>
               <span
-                className={`text-3xs px-2 py-0.5 rounded-full font-bold uppercase ${
-                  isExpired ? 'bg-rose-100 text-rose-800 border border-rose-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                }`}
+                className={`text-3xs px-2 py-0.5 rounded-full font-bold uppercase ${isExpired ? 'bg-rose-100 text-rose-800 border border-rose-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                  }`}
               >
                 {isExpired ? '🔒 Mode Lihat (Read-Only)' : '⏰ Mode Edit Terbuka'}
               </span>
@@ -704,9 +738,8 @@ export const CaptainPortalView = () => {
                   {isExpired ? '🔒 STATUS FORMASI FINAL & TERKUNCI' : '⏰ PENGISIAN BABAK / MATCH TERBUKA'}
                 </span>
                 <span
-                  className={`text-2xs font-bold px-2 py-0.5 rounded ${
-                    isExpired ? 'bg-rose-100 text-rose-900' : 'bg-amber-100 text-amber-950'
-                  }`}
+                  className={`text-2xs font-bold px-2 py-0.5 rounded ${isExpired ? 'bg-rose-100 text-rose-900' : 'bg-amber-100 text-amber-950'
+                    }`}
                 >
                   {isExpired
                     ? `Batas Ditutup (${deadlineInfo.text})`
@@ -739,9 +772,12 @@ export const CaptainPortalView = () => {
           {(formationData.cards || []).map((card) => {
             const isSemifinal = card.cardIndex === 6;
             const isCardCopied = copiedCardIndex === card.cardIndex;
-            const usedMatches = Object.entries(localCardDetails)
+            const usedRounds = Object.entries(localCardDetails)
               .filter(([idx, detail]) => String(idx) !== String(card.cardIndex) && Boolean(detail?.round))
               .map(([, detail]) => detail.round);
+            const usedOpponents = Object.entries(localCardDetails)
+              .filter(([idx, detail]) => String(idx) !== String(card.cardIndex) && Boolean(detail?.opponent))
+              .map(([, detail]) => detail.opponent);
 
             return (
               <CaptainCardInput
@@ -753,7 +789,9 @@ export const CaptainPortalView = () => {
                 teamName={authenticatedTeam?.name}
                 captainName={authenticatedTeam?.captain}
                 isSemifinal={isSemifinal}
-                usedMatches={usedMatches}
+                usedRounds={usedRounds}
+                usedOpponents={usedOpponents}
+                opponentTeams={opponentTeams}
                 isExpired={isExpired}
                 onCopySingle={handleCopySingleCard}
                 isCopied={isCardCopied}
